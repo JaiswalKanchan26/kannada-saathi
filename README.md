@@ -1,59 +1,49 @@
-# KannadaSaathi
+# Kannada Saathi
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.26.
+**Speak. Understand. Learn.**
 
-## Development server
+Kannada Saathi is a mobile-first Angular web application designed to help tourists, newcomers, students, and professionals communicate in Kannada and explore Karnataka's culture.
 
-To start a local development server, run:
+## Features
+
+- **Kannada in the Moment:** Useful everyday phrases with Kannada script, transliteration, and English meaning.
+- **Situations:** Find phrases for travel, shopping, food, transport, and everyday conversations.
+- **Learn Kannada:** Practice useful words and expressions.
+- **Festivals & Events:** Discover Karnataka's festivals and cultural celebrations.
+- **Profile & Activity:** Track learning progress and saved phrases.
+- **Responsive Design:** Designed for mobile and desktop screens.
+
+## Technology Stack
+
+- Angular
+- TypeScript
+- HTML and CSS
+- Git and GitHub
+
+## Getting Started
+
+### Prerequisites
+
+Install Node.js and npm.
+
+### Install dependencies
+
+```bash
+npm install
+```
+
+### Start the development server
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Open `http://localhost:4200/` in your browser.
 
-## Code scaffolding
+## Project Status
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Under development as a prototype for Kannada everyday communication and cultural discovery.
 
-```bash
-ng generate component component-name
-```
+## License
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+A license has not yet been selected.
