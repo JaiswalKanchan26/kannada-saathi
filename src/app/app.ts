@@ -1,12 +1,23 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { PreferencesService } from './core/services/preferences.service';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
   imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.css',
+  template: `<router-outlet />`,
+  styles: [`
+    :host {
+      display: block;
+      min-height: 100dvh;
+    }
+  `],
 })
-export class App {
-  protected readonly title = signal('kannada-saathi');
+export class App implements OnInit {
+  constructor(private prefs: PreferencesService) {}
+
+  ngOnInit(): void {
+    this.prefs.listenSystemTheme();
+  }
 }

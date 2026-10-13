@@ -1,0 +1,30 @@
+<svg width="100" height="110" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Golden Finial (Kalasha) -->
+  <path d="M50 4 L53 14 L47 14 Z" fill="#D99B26" />
+  <circle cx="50" cy="14" r="2.5" fill="#E8B038" />
+  <path d="M46 17 C46 15 54 15 54 17 L56 22 L44 22 Z" fill="#D99B26" />
+  
+  <!-- Green Onion Dome -->
+  <path d="M50 20 C42 28 32 37 32 49 C32 54 36 57 50 57 C64 57 68 54 68 49 C68 37 58 28 50 20 Z" fill="#147259" />
+  <!-- Dome Highlight & Trim -->
+  <path d="M50 20 C46 27 42 34 40 46 C45 49 55 49 60 46 C58 34 54 27 50 20 Z" fill="#1A8367" opacity="0.6"/>
+  <!-- Dome Base Trim -->
+  <ellipse cx="50" cy="56" rx="19" ry="3.5" fill="#F4B838" />
+  <ellipse cx="50" cy="57" rx="20" ry="2" fill="#D99B26" />
+
+  <!-- Outer Yellow/Amber Arch Structure -->
+  <path d="M24 100 L24 64 C24 50 36 44 50 44 C64 44 76 50 76 64 L76 100 L24 100 Z" fill="#F8BC3C" />
+  <!-- Inner White/Cream Alcove -->
+  <path d="M30 100 L30 67 C30 54 39 49 50 49 C61 49 70 54 70 67 L70 100 L30 100 Z" fill="#FFF8EB" />
+  
+  <!-- Architectural Gateway Silhouette inside -->
+  <!-- Center Main Archway -->
+  <path d="M44 100 L44 78 C44 73 47 70 50 70 C53 70 56 73 56 78 L56 100 Z" fill="#113F35" />
+  <!-- Left Arch Silhouettes -->
+  <path d="M33 100 L33 83 C33 79 36 76 39 76 C41 76 43 78 43 81 L43 100 Z" fill="#20766B" />
+  <!-- Right Arch Silhouette -->
+  <path d="M57 100 L57 81 C57 78 59 76 61 76 C64 76 67 79 67 83 L67 100 Z" fill="#20766B" />
+  <!-- Top Arch Details -->
+  <circle cx="50" cy="63" r="3" fill="#D99B26" />
+  <path d="M42 66 C46 63 54 63 58 66" stroke="#D99B26" stroke-width="1.5" stroke-linecap="round" fill="none" />
+</svg>
