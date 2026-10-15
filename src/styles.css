@@ -368,9 +368,9 @@ app-root {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem;
-  background: var(--color-bg-card);
-  border: 2px solid var(--color-border-soft);
+  padding: 0.95rem 1.15rem;
+  background: #FFFFFF;
+  border: 1.5px solid #E5E7EB;
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -381,19 +381,19 @@ app-root {
 
 .selection-card:hover {
   border-color: var(--color-primary-200);
-  background: var(--color-primary-50);
 }
 
 .selection-card.selected {
-  border-color: var(--color-primary);
-  background: var(--color-bg-soft);
+  border: 2px solid var(--color-primary);
+  background: #FFFFFF;
 }
 
-.selection-card .check-circle {
+.check-circle {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  border: 2px solid var(--color-border);
+  border: 2px solid #D1D5DB;
+  background: transparent;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -402,10 +402,92 @@ app-root {
   transition: all 0.2s ease;
 }
 
+.check-circle.selected,
 .selection-card.selected .check-circle {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: white;
+}
+
+/* ============================================================
+   ONBOARDING SHARED DESIGN SYSTEM
+   ============================================================ */
+.onboarding-page {
+  background: #FFFFFF;
+  min-height: 100dvh;
+}
+
+.onboarding-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--color-border-soft);
+  min-height: 56px;
+}
+
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.step {
+  width: 24px;
+  height: 4px;
+  border-radius: 99px;
+  background: #E5E7EB;
+  transition: all 0.25s ease;
+}
+
+.step.active {
+  background: var(--color-primary);
+  width: 32px;
+}
+
+.step.done {
+  background: var(--color-primary);
+  width: 24px;
+}
+
+.skip-btn {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  transition: color 0.15s ease;
+  min-width: 44px;
+  text-align: right;
+  font-family: var(--font-sans);
+}
+
+.skip-btn:hover {
+  color: var(--color-primary);
+}
+
+.onboarding-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0.5rem 0 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.onboarding-subtitle {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 1.75rem;
+  line-height: 1.5;
+}
+
+.onboarding-footer {
+  padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom));
+  background: #FFFFFF;
+  border-top: 1px solid var(--color-border-soft);
 }
 
 /* Form Elements */
