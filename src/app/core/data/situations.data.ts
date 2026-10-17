@@ -1,0 +1,68 @@
+import { Situation } from '../models/models';
+
+export const SITUATIONS: Situation[] = [
+  {
+    id: 'auto-transport',
+    icon: 'car',
+    titleEn: 'Auto & Transport',
+    titleKn: 'ಆಟೋ ಮತ್ತು ಸಾರಿಗೆ',
+    descriptionEn: 'Useful phrases for autos, buses, cabs and directions in Karnataka.',
+    color: '#E8F5EF',
+  },
+  {
+    id: 'food-dining',
+    icon: 'utensils',
+    titleEn: 'Food & Dining',
+    titleKn: 'ಆಹಾರ ಮತ್ತು ಹೊಟೇಲು',
+    descriptionEn: 'Restaurants, hotels, darshinis, and street food.',
+    color: '#E8F5EF',
+  },
+  {
+    id: 'shopping',
+    icon: 'bag',
+    titleEn: 'Shopping',
+    titleKn: 'ಖರೀದಿ',
+    descriptionEn: 'Markets, shops, bargaining, and payments.',
+    color: '#E8F5EF',
+  },
+  {
+    id: 'directions',
+    icon: 'pin',
+    titleEn: 'Directions',
+    titleKn: 'ದಾರಿ ಸೂಚನೆಗಳು',
+    descriptionEn: 'Finding your way around town, asking locals for help.',
+    color: '#E8F5EF',
+  },
+  {
+    id: 'accommodation',
+    icon: 'bed',
+    titleEn: 'Accommodation',
+    titleKn: 'ವಸತಿ ಸೌಲಭ್ಯ',
+    descriptionEn: 'Hotels, homestays, PGs, and checking in.',
+    color: '#E8F5EF',
+  },
+  {
+    id: 'education-work',
+    icon: 'briefcase',
+    titleEn: 'Study & Work',
+    titleKn: 'ಉದ್ಯೋಗ ಮತ್ತು ಶಿಕ್ಷಣ',
+    descriptionEn: 'Colleges, offices, teams, and colleagues.',
+    color: '#E8F5EF',
+  },
+  {
+    id: 'healthcare',
+    icon: 'heart',
+    titleEn: 'Healthcare',
+    titleKn: 'ಆರೋಗ್ಯ ಸೇವೆ',
+    descriptionEn: 'Pharmacies, clinics, and medical needs.',
+    color: '#E8F5EF',
+  },
+  {
+    id: 'emergency',
+    icon: 'shield',
+    titleEn: 'Emergency',
+    titleKn: 'ತುರ್ತು ಸಹಾಯ',
+    descriptionEn: 'Police, ambulance, help, and safety.',
+    color: '#E8F5EF',
+  },
+];
