@@ -24,44 +24,15 @@ import { PreferencesService } from '../../../core/services/preferences.service';
 
         <!-- Upper Branding Section -->
         <div class="splash-header animate-slide-up">
-          <!-- Dome Emblem Logo -->
+          <!-- Official Emblem Logo -->
           <div class="logo-wrapper" aria-hidden="true">
-            <svg class="palace-dome-logo" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <!-- Golden Finial (Kalasha) -->
-              <path d="M50 3 L53.5 14 L46.5 14 Z" fill="#D99B26" />
-              <circle cx="50" cy="14" r="2.8" fill="#F0B538" />
-              <path d="M45.5 17 C45.5 14.8 54.5 14.8 54.5 17 L56.5 22 L43.5 22 Z" fill="#D99B26" />
-
-              <!-- Green Onion Dome -->
-              <path d="M50 20 C41.5 28.5 32 37.5 32 49 C32 54.5 36.5 57 50 57 C63.5 57 68 54.5 68 49 C68 37.5 58.5 28.5 50 20 Z" fill="#136952" />
-              <!-- Subtle dome highlights -->
-              <path d="M50 21 C45.5 28 41 35 39 46 C44.5 49 55.5 49 61 46 C59 35 54.5 28 50 21 Z" fill="#1B8065" opacity="0.65" />
-              <!-- Dome Base Trim -->
-              <ellipse cx="50" cy="56" rx="19.5" ry="3.5" fill="#F4B838" />
-              <ellipse cx="50" cy="57.5" rx="20" ry="2" fill="#D49320" />
-
-              <!-- Outer Yellow/Amber Arch Structure -->
-              <path d="M23 100 L23 64 C23 49 35 43.5 50 43.5 C65 43.5 77 49 77 64 L77 100 L23 100 Z" fill="#F8BA36" />
-              <!-- Inner White/Cream Alcove -->
-              <path d="M29 100 L29 67 C29 53.5 38.5 48.5 50 48.5 C61.5 48.5 71 53.5 71 67 L71 100 L29 100 Z" fill="#FFF8EA" />
-
-              <!-- Architectural Gateway Silhouette inside -->
-              <!-- Main Center Archway -->
-              <path d="M43.5 100 L43.5 78 C43.5 72.5 46.5 69.5 50 69.5 C53.5 69.5 56.5 72.5 56.5 78 L56.5 100 Z" fill="#0E3C32" />
-              <!-- Left Arch Silhouettes -->
-              <path d="M32 100 L32 82.5 C32 78 35.5 75 38.5 75 C41 75 42.5 77 42.5 80 L42.5 100 Z" fill="#1D6E63" />
-              <!-- Right Arch Silhouette -->
-              <path d="M57.5 100 L57.5 80 C57.5 77 59 75 61.5 75 C64.5 75 68 78 68 82.5 L68 100 Z" fill="#1D6E63" />
-              <!-- Ornamental Arch Dots -->
-              <circle cx="50" cy="62.5" r="3" fill="#D99B26" />
-              <path d="M41 65.5 C45.5 62.5 54.5 62.5 59 65.5" stroke="#D99B26" stroke-width="1.6" stroke-linecap="round" fill="none" />
-            </svg>
+            <img src="assets/Namma_Logo.png" alt="Namma Kannada Logo" class="brand-logo-img" />
           </div>
 
           <!-- App Title -->
           <h1 class="brand-title">
+            <span class="title-line">Namma</span>
             <span class="title-line">Kannada</span>
-            <span class="title-line">Saathi</span>
           </h1>
 
           <!-- Tagline -->
@@ -201,10 +172,11 @@ import { PreferencesService } from '../../../core/services/preferences.service';
       transition: transform 0.3s ease;
     }
 
-    .palace-dome-logo {
-      width: 78px;
-      height: 86px;
-      display: block;
+    .brand-logo-img {
+      width: 96px;
+      height: 96px;
+      display: inline-block;
+      object-fit: contain;
     }
 
     .brand-title {

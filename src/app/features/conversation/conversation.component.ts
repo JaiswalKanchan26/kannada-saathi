@@ -145,6 +145,26 @@ interface QuickScenario {
               <span>Find phrase</span>
             </button>
           </div>
+
+          <!-- Voice Recognition Status Banner -->
+          @if (statusMessage()) {
+            <div class="voice-status-pill animate-fade-in" [class.warning]="statusType() === 'warning'" [class.listening]="statusType() === 'listening'">
+              @if (statusType() === 'listening') {
+                <span class="pulsing-mic-dot"></span>
+              } @else if (statusType() === 'warning') {
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              } @else {
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              }
+              <span>{{ statusMessage() }}</span>
+            </div>
+          }
         </div>
 
         <!-- Best Match Result Card -->
@@ -644,6 +664,43 @@ interface QuickScenario {
       background: #135545;
     }
 
+    /* Voice Status Pill */
+    .voice-status-pill {
+      margin-top: 0.65rem;
+      padding: 0.5rem 0.85rem;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: #F0FDF4;
+      color: #166534;
+      border: 1px solid #BBF7D0;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .voice-status-pill.warning {
+      background: #FFFBEB;
+      color: #92400E;
+      border-color: #FDE68A;
+    }
+
+    .voice-status-pill.listening {
+      background: #FEF2F2;
+      color: #991B1B;
+      border-color: #FECACA;
+    }
+
+    .pulsing-mic-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #EF4444;
+      animation: pulse-red 1s infinite;
+      flex-shrink: 0;
+    }
+
     /* Result Card */
     .result-card {
       background: #FFFFFF;
@@ -1053,6 +1110,19 @@ interface QuickScenario {
 export class ConversationComponent implements OnInit {
   inputText = '';
   isListening = signal<boolean>(false);
+  statusMessage = signal<string | null>(null);
+  statusType = signal<'info' | 'warning' | 'listening'>('info');
+  private activeRecognition: any = null;
+  private statusTimeout: any = null;
+  private samplePhrases = [
+    'How much for one coffee?',
+    'Go by meter',
+    'Where is the bus stop?',
+    'How much does it cost?',
+    'Will I get a taxi here?'
+  ];
+  private samplePhraseIdx = 0;
+
   bestMatch = signal<Phrase | null>(null);
   matchingList = signal<Phrase[]>([]);
   isExactMatch = signal<boolean>(true);
@@ -1147,44 +1217,133 @@ export class ConversationComponent implements OnInit {
     this.phraseService.toggleSavePhrase(phrase.id);
   }
 
-  toggleListening(): void {
+  showStatus(msg: string, type: 'info' | 'warning' | 'listening' = 'info', autoClearMs = 4000): void {
+    if (this.statusTimeout) {
+      clearTimeout(this.statusTimeout);
+      this.statusTimeout = null;
+    }
+    this.statusMessage.set(msg);
+    this.statusType.set(type);
+
+    if (autoClearMs > 0) {
+      this.statusTimeout = setTimeout(() => {
+        this.clearStatusMessage();
+      }, autoClearMs);
+    }
+  }
+
+  clearStatusMessage(): void {
+    if (this.statusTimeout) {
+      clearTimeout(this.statusTimeout);
+      this.statusTimeout = null;
+    }
+    this.statusMessage.set(null);
+  }
+
+  async toggleListening(): Promise<void> {
     if (this.isListening()) {
+      if (this.activeRecognition) {
+        try {
+          this.activeRecognition.abort();
+        } catch {}
+        this.activeRecognition = null;
+      }
       this.isListening.set(false);
+      this.clearStatusMessage();
       return;
     }
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SpeechRecognition) {
+    // Explicitly prompt for mic permission on mobile before starting speech recognition
+    if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
       try {
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'en-IN';
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        this.isListening.set(true);
-
-        recognition.onresult = (event: any) => {
-          const transcript = event.results[0][0].transcript;
-          this.inputText = transcript;
-          this.isListening.set(false);
-          this.findMatchingPhrases();
-        };
-
-        recognition.onerror = () => { this.isListening.set(false); };
-        recognition.onend = () => { this.isListening.set(false); };
-        recognition.start();
-      } catch {
-        this.simulateVoice();
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(t => t.stop());
+      } catch (err: any) {
+        console.warn('Microphone permission check failed:', err);
+        if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
+          this.showStatus('Microphone blocked. Please allow mic access in your browser or phone settings.', 'warning', 5000);
+          return;
+        }
       }
-    } else {
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      this.showStatus('Voice recognition not supported on this browser. Simulating sample speech...', 'info', 3500);
+      this.simulateVoice();
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      this.activeRecognition = recognition;
+      recognition.lang = 'en-IN';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      this.isListening.set(true);
+      this.showStatus('Listening... Speak now in English or Hindi', 'listening', 0);
+
+      let hasResult = false;
+
+      recognition.onresult = (event: any) => {
+        hasResult = true;
+        const transcript = event.results?.[0]?.[0]?.transcript;
+        if (transcript) {
+          this.inputText = transcript;
+          this.showStatus(`Heard: "${transcript}"`, 'info', 3000);
+          this.isListening.set(false);
+          this.activeRecognition = null;
+          this.findMatchingPhrases();
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn('Speech recognition error on mobile:', event.error);
+        this.isListening.set(false);
+        this.activeRecognition = null;
+
+        if (event.error === 'no-speech') {
+          this.showStatus('No voice detected. Tap Speak and speak clearly.', 'warning', 4000);
+        } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+          this.showStatus('Microphone permission denied. Check your app/browser mic settings.', 'warning', 5000);
+        } else if (event.error === 'network') {
+          this.showStatus('Voice recognition requires an internet connection.', 'warning', 4000);
+        } else {
+          // Mobile WebView fallback where recognition service is not connected
+          this.showStatus('Mobile voice service unavailable. Loaded sample voice input.', 'info', 4000);
+          this.simulateVoice();
+        }
+      };
+
+      recognition.onend = () => {
+        this.isListening.set(false);
+        this.activeRecognition = null;
+        if (!hasResult && this.statusType() === 'listening') {
+          this.clearStatusMessage();
+        }
+      };
+
+      recognition.start();
+    } catch (startErr) {
+      console.warn('Speech recognition start failed:', startErr);
+      this.isListening.set(false);
+      this.activeRecognition = null;
+      this.showStatus('Speech service unavailable. Using sample phrase.', 'info', 3500);
       this.simulateVoice();
     }
   }
 
   private simulateVoice(): void {
     this.isListening.set(true);
+    const chosen = this.samplePhrases[this.samplePhraseIdx % this.samplePhrases.length];
+    this.samplePhraseIdx++;
+
     setTimeout(() => {
-      this.inputText = 'How much for one coffee?';
+      this.inputText = chosen;
       this.isListening.set(false);
+      this.showStatus(`Sample voice input: "${chosen}"`, 'info', 3000);
       this.findMatchingPhrases();
     }, 1200);
   }

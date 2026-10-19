@@ -15,9 +15,12 @@ import { Phrase } from '../../core/models/models';
       <!-- Top Header -->
       <header class="home-header">
         <div class="header-top-row">
-          <div class="header-greeting">
-            <p class="greeting-sub">Namaskara! 🙏</p>
-            <h1 class="greeting-main">Ready to explore Karnataka?</h1>
+          <div class="header-brand-wrap">
+            <img src="assets/Namma_Logo.png" alt="Namma Kannada Logo" class="header-app-logo" />
+            <div class="header-greeting">
+              <p class="greeting-sub">Namaskara! 🙏</p>
+              <h1 class="greeting-main">Ready to explore Karnataka?</h1>
+            </div>
           </div>
           <button class="avatar-btn" id="btn-home-profile" (click)="router.navigate(['/profile'])" aria-label="Go to profile">
             <div class="avatar">{{ initials() }}</div>
@@ -241,6 +244,25 @@ import { Phrase } from '../../core/models/models';
       align-items: center;
       justify-content: space-between;
       gap: 0.75rem;
+    }
+
+    .header-brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .header-app-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #FFFFFF;
+      padding: 2px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      object-fit: contain;
+      flex-shrink: 0;
     }
 
     .greeting-sub {

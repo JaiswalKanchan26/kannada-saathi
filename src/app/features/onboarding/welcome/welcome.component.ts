@@ -40,9 +40,13 @@ import { PreferencesService } from '../../../core/services/preferences.service';
         <div class="content-wrapper">
           <!-- Text Header -->
           <section class="welcome-header">
+            <div class="welcome-logo-badge" aria-hidden="true">
+              <img src="assets/Namma_Logo.png" alt="Namma Kannada Logo" class="welcome-logo-img" />
+            </div>
+
             <h1 class="welcome-title">
               <span class="title-greeting">Welcome to</span>
-              <span class="title-app">Kannada Saathi!</span>
+              <span class="title-app">Namma Kannada!</span>
             </h1>
 
             <p class="welcome-description">
@@ -205,6 +209,18 @@ import { PreferencesService } from '../../../core/services/preferences.service';
       align-items: flex-start;
       text-align: left;
       padding-top: 0.25rem;
+    }
+
+    .welcome-logo-badge {
+      margin-bottom: 0.5rem;
+      filter: drop-shadow(0 4px 10px rgba(14, 72, 57, 0.16));
+    }
+
+    .welcome-logo-img {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+      display: block;
     }
 
     .welcome-title {

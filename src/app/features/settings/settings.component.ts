@@ -252,22 +252,14 @@ import { UserPreferences } from '../../core/models/models';
           </div>
         </section>
 
-        <!-- About App Card - Zero Emojis, Clean Vector Branding -->
+        <!-- About App Card -->
         <div class="about-card">
-          <!-- Stylized Karnataka Emblem Crest -->
+          <!-- Official Emblem Logo -->
           <div class="about-emblem" aria-hidden="true">
-            <svg width="44" height="44" viewBox="0 0 48 48" fill="none">
-              <circle cx="24" cy="24" r="22" fill="#E8F5EF" stroke="#176B57" stroke-width="2"/>
-              <!-- Karnataka State colors flag ribbons inside seal -->
-              <path d="M12 21h24v-6c0-4-3-6-7-6H19c-4 0-7 2-7 6v6z" fill="#DC2626"/>
-              <path d="M12 21h24v6c0 4-3 6-7 6H19c-4 0-7-2-7-6v-6z" fill="#F59E0B"/>
-              <!-- Kannada Letter 'Ka' stylized in center white circle -->
-              <circle cx="24" cy="24" r="9" fill="#FFFFFF" stroke="#176B57" stroke-width="1.5"/>
-              <text x="24" y="28" font-size="12" font-family="'Noto Sans Kannada', sans-serif" font-weight="700" fill="#176B57" text-anchor="middle">ಕ</text>
-            </svg>
+            <img src="assets/Namma_Logo.png" alt="Namma Kannada Logo" class="about-logo-img" />
           </div>
 
-          <h3 class="about-app-name">Kannada Saathi (ಕನ್ನಡ ಸಾಥಿ)</h3>
+          <h3 class="about-app-name">Namma Kannada (ನಮ್ಮ ಕನ್ನಡ)</h3>
           <div class="about-badge-row">
             <span class="about-tag">Version 1.0.0</span>
             <span class="about-tag">100% Offline Ready</span>
@@ -650,6 +642,14 @@ import { UserPreferences } from '../../core/models/models';
       display: flex;
       justify-content: center;
       margin-bottom: 0.75rem;
+    }
+
+    .about-logo-img {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
     .about-app-name {
