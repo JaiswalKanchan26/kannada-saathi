@@ -24,7 +24,9 @@ export class PreferencesService {
 
   constructor(private storage: StorageService) {
     const saved = this.storage.get<UserPreferences>(PREFS_KEY, DEFAULT_PREFS);
-    this._prefs.set({ ...DEFAULT_PREFS, ...saved });
+    // Always default to light mode — override any old 'system' saved preference
+    const effectiveTheme = saved.theme === 'system' ? 'light' : (saved.theme ?? 'light');
+    this._prefs.set({ ...DEFAULT_PREFS, ...saved, theme: effectiveTheme });
     this.applyTheme(this._prefs().theme);
     this.applyTextSize(this._prefs().textSize);
   }

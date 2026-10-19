@@ -1,10 +1,12 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Capacitor } from '@capacitor/core';
 import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav.component';
 import { PhraseService } from '../../core/services/phrase.service';
 import { AudioService } from '../../core/services/audio.service';
 import { ActivityService } from '../../core/services/activity.service';
+import { TranslationService } from '../../core/services/translation.service';
 import { Phrase } from '../../core/models/models';
 
 interface QuickScenario {
@@ -167,17 +169,34 @@ interface QuickScenario {
           }
         </div>
 
+        <!-- Live translate spinner -->
+        @if (isTranslating()) {
+          <div class="translating-pill animate-fade-in">
+            <span class="spinner-dot"></span>
+            <span>Translating to Kannada...</span>
+          </div>
+        }
+
         <!-- Best Match Result Card -->
-        @if (bestMatch()) {
-          <div class="result-card">
+        @if (bestMatch() && !isTranslating()) {
+          <div class="result-card" [class.live-card]="isLiveMode()">
             <!-- Top Row: Badge + Show to someone -->
             <div class="result-header-row">
-              <div class="match-badge-pill">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                  <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-                <span>{{ isExactMatch() ? 'Best phrase match' : 'Suggested match' }}</span>
+              <div class="match-badge-pill" [class.live-badge]="isLiveMode()">
+                @if (isLiveMode()) {
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="2" y1="12" x2="22" y2="12"/>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                  </svg>
+                  <span>Live translation</span>
+                } @else {
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  <span>Best phrase match</span>
+                }
               </div>
 
               <button
@@ -244,14 +263,23 @@ interface QuickScenario {
               </button>
             </div>
 
-            <!-- Matched from phrasebook indicator -->
-            @if (isExactMatch()) {
+            <!-- Source indicator -->
+            @if (!isLiveMode()) {
               <div class="matched-from-row">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                   <polyline points="14 2 14 8 20 8"/>
                 </svg>
                 <span>Matched from your phrasebook</span>
+              </div>
+            } @else {
+              <div class="matched-from-row live-source">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                <span>Translated live via Google Translate</span>
               </div>
             }
           </div>
@@ -1105,15 +1133,67 @@ interface QuickScenario {
     .float-action-btn.saved {
       color: #176B57;
     }
+
+    /* ── Live Translation UI ── */
+    .translating-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #ECFDF5;
+      border: 1.5px solid #6EE7B7;
+      border-radius: 9999px;
+      padding: 0.5rem 1rem;
+      margin: 0.5rem 0;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #065F46;
+    }
+
+    .spinner-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #10B981;
+      animation: pulse-dot 0.9s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.6); }
+    }
+
+    .live-card {
+      border-color: #6EE7B7 !important;
+      background: linear-gradient(135deg, #FFFFFF 0%, #F0FDF9 100%) !important;
+    }
+
+    .live-badge {
+      background: #ECFDF5 !important;
+      color: #065F46 !important;
+      border-color: #6EE7B7 !important;
+    }
+
+    .live-source {
+      color: #059669 !important;
+    }
+
+    .live-source span {
+      color: #059669 !important;
+    }
   `],
 })
-export class ConversationComponent implements OnInit {
+export class ConversationComponent implements OnInit, OnDestroy {
   inputText = '';
   isListening = signal<boolean>(false);
+  isTranslating = signal<boolean>(false);
+  isLiveMode = signal<boolean>(false);
   statusMessage = signal<string | null>(null);
   statusType = signal<'info' | 'warning' | 'listening'>('info');
   private activeRecognition: any = null;
+  private nativeSpeechRecognition: any = null;
   private statusTimeout: any = null;
+  private translateDebounce: any = null;
   private samplePhrases = [
     'How much for one coffee?',
     'Go by meter',
@@ -1144,12 +1224,43 @@ export class ConversationComponent implements OnInit {
     private phraseService: PhraseService,
     private audioService: AudioService,
     private activityService: ActivityService,
+    private translationService: TranslationService,
     private router: Router
-  ) {}
+  ) {
+    this.initNativeSpeechRecognition();
+  }
+
+  private async initNativeSpeechRecognition(): Promise<void> {
+    if (!Capacitor.isNativePlatform()) return;
+    try {
+      const { SpeechRecognition } = await import('@capacitor-community/speech-recognition');
+      this.nativeSpeechRecognition = SpeechRecognition;
+    } catch (e) {
+      console.warn('Native SpeechRecognition plugin not available:', e);
+    }
+  }
 
   ngOnInit(): void {
     this.inputText = 'Go by meter';
     this.findMatchingPhrases();
+  }
+
+  ngOnDestroy(): void {
+    this.stopNativeListening();
+    this.clearStatusMessage();
+    if (this.translateDebounce) clearTimeout(this.translateDebounce);
+  }
+
+  private stopNativeListening(): void {
+    if (this.nativeSpeechRecognition) {
+      try { this.nativeSpeechRecognition.stop(); } catch { /* ignore */ }
+      try { this.nativeSpeechRecognition.removeAllListeners(); } catch { /* ignore */ }
+    }
+    if (this.activeRecognition) {
+      try { this.activeRecognition.abort(); } catch { /* ignore */ }
+      this.activeRecognition = null;
+    }
+    this.isListening.set(false);
   }
 
   goBack(): void {
@@ -1167,11 +1278,18 @@ export class ConversationComponent implements OnInit {
     this.inputText = '';
     this.bestMatch.set(null);
     this.matchingList.set([]);
+    this.isLiveMode.set(false);
+    if (this.translateDebounce) clearTimeout(this.translateDebounce);
   }
 
   onInputChange(val: string): void {
     if (val && val.length > 1) {
+      // Debounce: search offline first instantly, then live-translate after 600ms pause
       this.findMatchingPhrases();
+      if (this.translateDebounce) clearTimeout(this.translateDebounce);
+      this.translateDebounce = setTimeout(() => {
+        this.liveTranslate(val.trim());
+      }, 600);
     }
   }
 
@@ -1184,20 +1302,62 @@ export class ConversationComponent implements OnInit {
       this.bestMatch.set(results[0]);
       this.matchingList.set(results);
       this.isExactMatch.set(true);
+      this.isLiveMode.set(false);
       this.activityService.log('translation', results[0].id, results[0].english);
-    } else {
-      const fallback: Phrase = {
-        id: 'offline-query',
+    }
+    // If no offline match, liveTranslate() will be called by onInputChange after debounce
+  }
+
+  /**
+   * Live translation: calls Google Translate for any English text.
+   * Used when offline phrasebook has no match, or after voice input.
+   */
+  async liveTranslate(text: string): Promise<void> {
+    if (!text) return;
+
+    // If we already have a phrasebook match, don't override it with live translation
+    const offlineResults = this.phraseService.searchPhrases(text);
+    if (offlineResults.length > 0) {
+      this.bestMatch.set(offlineResults[0]);
+      this.matchingList.set(offlineResults);
+      this.isExactMatch.set(true);
+      this.isLiveMode.set(false);
+      return;
+    }
+
+    this.isTranslating.set(true);
+    this.bestMatch.set(null);
+    this.matchingList.set([]);
+
+    try {
+      const result = await this.translationService.translate(text);
+
+      if (result.error) {
+        this.showStatus(result.error, 'warning', 5000);
+        this.isTranslating.set(false);
+        return;
+      }
+
+      // Build a dynamic Phrase from the live translation
+      const livePhrase: Phrase = {
+        id: 'live-translation',
         situationId: 'general',
-        kannada: 'ಹೇಗೆ ಹೇಳುವುದು?',
-        transliteration: 'Hege heluvudu?',
-        english: `How to say: "${q}"`,
+        kannada: result.kannada,
+        transliteration: result.transliteration || '',
+        english: result.english,
         verified: false,
-        note: 'Phrase not found in offline dictionary. Try different keywords.'
       };
-      this.bestMatch.set(fallback);
+
+      this.bestMatch.set(livePhrase);
       this.matchingList.set([]);
       this.isExactMatch.set(false);
+      this.isLiveMode.set(true);
+      this.activityService.log('translation', 'live', text);
+    } catch (err) {
+      console.warn('Live translation failed:', err);
+      this.showStatus('Translation failed. Check your internet connection.', 'warning', 4000);
+    } finally {
+      this.isTranslating.set(false);
     }
   }
 
@@ -1242,18 +1402,18 @@ export class ConversationComponent implements OnInit {
 
   async toggleListening(): Promise<void> {
     if (this.isListening()) {
-      if (this.activeRecognition) {
-        try {
-          this.activeRecognition.abort();
-        } catch {}
-        this.activeRecognition = null;
-      }
-      this.isListening.set(false);
+      this.stopNativeListening();
       this.clearStatusMessage();
       return;
     }
 
-    // Explicitly prompt for mic permission on mobile before starting speech recognition
+    // === NATIVE ANDROID / iOS path ===
+    if (Capacitor.isNativePlatform() && this.nativeSpeechRecognition) {
+      await this.startNativeListening();
+      return;
+    }
+
+    // === WEB path: prompt for mic permission ===
     if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -1267,15 +1427,15 @@ export class ConversationComponent implements OnInit {
       }
     }
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
+    const SpeechRecognitionClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognitionClass) {
       this.showStatus('Voice recognition not supported on this browser. Simulating sample speech...', 'info', 3500);
       this.simulateVoice();
       return;
     }
 
     try {
-      const recognition = new SpeechRecognition();
+      const recognition = new SpeechRecognitionClass();
       this.activeRecognition = recognition;
       recognition.lang = 'en-IN';
       recognition.continuous = false;
@@ -1283,7 +1443,7 @@ export class ConversationComponent implements OnInit {
       recognition.maxAlternatives = 1;
 
       this.isListening.set(true);
-      this.showStatus('Listening... Speak now in English or Hindi', 'listening', 0);
+      this.showStatus('Listening... Speak now in English', 'listening', 0);
 
       let hasResult = false;
 
@@ -1295,24 +1455,25 @@ export class ConversationComponent implements OnInit {
           this.showStatus(`Heard: "${transcript}"`, 'info', 3000);
           this.isListening.set(false);
           this.activeRecognition = null;
+          // First try offline phrasebook, then live translate
           this.findMatchingPhrases();
+          this.liveTranslate(transcript);
         }
       };
 
       recognition.onerror = (event: any) => {
-        console.warn('Speech recognition error on mobile:', event.error);
+        console.warn('Speech recognition error:', event.error);
         this.isListening.set(false);
         this.activeRecognition = null;
 
         if (event.error === 'no-speech') {
           this.showStatus('No voice detected. Tap Speak and speak clearly.', 'warning', 4000);
         } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-          this.showStatus('Microphone permission denied. Check your app/browser mic settings.', 'warning', 5000);
+          this.showStatus('Microphone permission denied. Check your browser mic settings.', 'warning', 5000);
         } else if (event.error === 'network') {
           this.showStatus('Voice recognition requires an internet connection.', 'warning', 4000);
         } else {
-          // Mobile WebView fallback where recognition service is not connected
-          this.showStatus('Mobile voice service unavailable. Loaded sample voice input.', 'info', 4000);
+          this.showStatus('Voice service unavailable. Loaded a sample phrase.', 'info', 4000);
           this.simulateVoice();
         }
       };
@@ -1335,6 +1496,93 @@ export class ConversationComponent implements OnInit {
     }
   }
 
+  /**
+   * Use native @capacitor-community/speech-recognition on Android/iOS.
+   * The plugin is event-driven: start() begins listening, and 'partialResults'
+   * fires as the user speaks. Recognition stops when the user stops talking.
+   */
+  private async startNativeListening(): Promise<void> {
+    try {
+      const { available } = await this.nativeSpeechRecognition.available();
+      if (!available) {
+        this.showStatus('Speech recognition not available on this device.', 'warning', 4000);
+        return;
+      }
+
+      const permResult = await this.nativeSpeechRecognition.requestPermission();
+      if (permResult?.permission === 'denied') {
+        this.showStatus(
+          'Microphone blocked. Go to Settings → Apps → Namma Kannada → Permissions → Allow Microphone.',
+          'warning', 7000
+        );
+        return;
+      }
+
+      // Remove any stale listeners before starting fresh
+      this.nativeSpeechRecognition.removeAllListeners();
+
+      this.isListening.set(true);
+      this.showStatus('Listening... Speak in English', 'listening', 0);
+
+      // Partial results fire as user speaks — update input in real time
+      await this.nativeSpeechRecognition.addListener('partialResults', (data: any) => {
+        const matches: string[] = data?.matches ?? [];
+        if (matches.length > 0) {
+          this.inputText = matches[0];
+          this.findMatchingPhrases();
+        }
+      });
+
+      // listeningState fires 'stopped' when recognition ends
+      await this.nativeSpeechRecognition.addListener('listeningState', (state: any) => {
+        if (state?.status === 'stopped') {
+          this.isListening.set(false);
+          this.nativeSpeechRecognition.removeAllListeners();
+          if (this.inputText.trim()) {
+            this.showStatus(`Heard: "${this.inputText}"`, 'info', 3000);
+            // Run live translation after voice input completes
+            this.liveTranslate(this.inputText.trim());
+          } else {
+            this.clearStatusMessage();
+          }
+        }
+      });
+
+      await this.nativeSpeechRecognition.start({
+        language: 'en-IN',
+        maxResults: 3,
+        prompt: 'Say a phrase in English',
+        partialResults: true,
+        popup: false,
+      });
+
+      // Safety timeout: if recognition does not auto-stop in 10s, stop it manually
+      setTimeout(async () => {
+        if (this.isListening()) {
+          try { await this.nativeSpeechRecognition.stop(); } catch { /* ignore */ }
+          this.isListening.set(false);
+          if (this.inputText.trim()) {
+            this.liveTranslate(this.inputText.trim());
+          }
+        }
+      }, 10000);
+
+    } catch (err: any) {
+      console.warn('Native speech recognition error:', err);
+      this.isListening.set(false);
+      const msg = (err?.message ?? '').toLowerCase();
+      if (msg.includes('permission') || err?.code === 'PERMISSION_DENIED') {
+        this.showStatus('Microphone permission denied. Please allow it in phone Settings.', 'warning', 5000);
+      } else if (msg.includes('not available') || msg.includes('not supported')) {
+        this.showStatus('Speech recognition not supported on this device. Try typing instead.', 'warning', 5000);
+      } else {
+        // Fallback to simulated voice so the demo still works
+        this.showStatus('Voice recognition failed — using sample phrase for demo.', 'info', 4000);
+        this.simulateVoice();
+      }
+    }
+  }
+
   private simulateVoice(): void {
     this.isListening.set(true);
     const chosen = this.samplePhrases[this.samplePhraseIdx % this.samplePhrases.length];
@@ -1345,6 +1593,7 @@ export class ConversationComponent implements OnInit {
       this.isListening.set(false);
       this.showStatus(`Sample voice input: "${chosen}"`, 'info', 3000);
       this.findMatchingPhrases();
+      this.liveTranslate(chosen);
     }, 1200);
   }
 }

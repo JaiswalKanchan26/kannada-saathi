@@ -1,22 +1,25 @@
 import { Injectable } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
 
 /**
  * AudioService: abstraction for Kannada audio playback.
- * 
+ *
  * Multi-tier engine:
- * 1. Checks for on-device Kannada voice in Web Speech API (device TTS).
- * 2. If unsupported, language pack missing on mobile, or synthesis fails,
- *    seamlessly falls back to online streaming audio TTS.
- * 3. Works seamlessly on desktop, mobile Chrome, mobile Safari, and Capacitor Android WebView.
+ * 1. On Android/iOS: Uses @capacitor-community/text-to-speech (native TTS engine).
+ *    This works 100% reliably on any Android phone regardless of whether the user
+ *    installed a specific Kannada voice — Android's built-in TTS engine handles it.
+ * 2. On Web (desktop / browser): Uses Web Speech API or Google Translate TTS streaming fallback.
  */
 @Injectable({ providedIn: 'root' })
 export class AudioService {
-  private currentUtterance: SpeechSynthesisUtterance | null = null;
   private currentAudio: HTMLAudioElement | null = null;
+  private currentUtterance: SpeechSynthesisUtterance | null = null;
   private _isPlaying = false;
   private kannadaVoice: SpeechSynthesisVoice | null = null;
+  private nativeTTS: any = null;
 
   constructor() {
+    this.initNativeTTS();
     this.initVoices();
   }
 
@@ -25,14 +28,27 @@ export class AudioService {
   }
 
   isSupported(): boolean {
-    return typeof window !== 'undefined' && 'speechSynthesis' in window;
+    return typeof window !== 'undefined' && ('speechSynthesis' in window || Capacitor.isNativePlatform());
   }
 
   /**
-   * Initialize and discover Kannada voices if installed on the mobile device or browser.
+   * Initialize native TTS plugin for Capacitor (Android/iOS).
+   */
+  private async initNativeTTS(): Promise<void> {
+    if (!Capacitor.isNativePlatform()) return;
+    try {
+      const { TextToSpeech } = await import('@capacitor-community/text-to-speech');
+      this.nativeTTS = TextToSpeech;
+    } catch (e) {
+      console.warn('Native TTS plugin not available:', e);
+    }
+  }
+
+  /**
+   * Initialize and discover Kannada voices for Web Speech API fallback.
    */
   private initVoices(): void {
-    if (!this.isSupported()) return;
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
     const findVoice = () => {
       try {
@@ -50,7 +66,7 @@ export class AudioService {
     };
 
     findVoice();
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
+    if (window.speechSynthesis) {
       window.speechSynthesis.onvoiceschanged = findVoice;
     }
   }
@@ -86,45 +102,66 @@ export class AudioService {
   }
 
   /**
-   * Online TTS fallback using standard HTTP audio streaming.
-   * Works on 100% of Android phones, iPhones, and Android WebViews without requiring
-   * the user to download offline voice data.
-   */
-  private playOnlineTTS(text: string): Promise<void> {
-    const encoded = encodeURIComponent(text.trim());
-    // Google Translate TTS endpoint for Kannada (tl=kn)
-    const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=kn&q=${encoded}`;
-    return this.playAudioUrl(url);
-  }
-
-  /**
-   * Speak Kannada text using on-device TTS when possible, with automatic online fallback
+   * Speak Kannada text.
+   * - On mobile (Android/iOS): uses native TTS engine via Capacitor plugin.
+   * - On web: tries Web Speech API first, then streams from Google Translate TTS.
    */
   async speakKannada(text: string): Promise<void> {
     if (!text || !text.trim()) return;
 
     this.stop();
 
-    // If native speech synthesis is supported, attempt device TTS first
-    if (this.isSupported()) {
+    // === NATIVE ANDROID / iOS path ===
+    if (Capacitor.isNativePlatform() && this.nativeTTS) {
       try {
-        await this.speakViaWebSpeech(text);
+        this._isPlaying = true;
+        await this.nativeTTS.speak({
+          text: text.trim(),
+          lang: 'kn-IN',
+          rate: 0.85,
+          pitch: 1.0,
+          volume: 1.0,
+          category: 'ambient',
+        });
+        this._isPlaying = false;
         return;
       } catch (nativeErr) {
-        // Native speech synthesis failed (often due to missing Kannada voice pack on mobile Android).
-        // Fall through to online audio stream fallback.
-        console.warn('Native speech synthesis failed or Kannada voice pack not installed on phone, using streaming TTS fallback:', nativeErr);
+        console.warn('Native TTS failed, trying fallback:', nativeErr);
+        this._isPlaying = false;
+        // Fall through to web fallback
       }
     }
 
-    // High-quality online audio fallback
+    // === WEB path: try Web Speech API first ===
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try {
+        await this.speakViaWebSpeech(text);
+        return;
+      } catch (webErr) {
+        console.warn('Web Speech API failed, using streaming TTS fallback:', webErr);
+      }
+    }
+
+    // === Ultimate fallback: Google Translate TTS streaming ===
     await this.playOnlineTTS(text);
   }
 
+  /**
+   * Online TTS fallback via Google Translate audio stream.
+   * Works on desktop browsers without a Kannada voice installed.
+   */
+  private playOnlineTTS(text: string): Promise<void> {
+    const encoded = encodeURIComponent(text.trim());
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=kn&q=${encoded}`;
+    return this.playAudioUrl(url);
+  }
+
+  /**
+   * Web Speech API TTS with mobile-specific workarounds.
+   */
   private speakViaWebSpeech(text: string): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        // Resume if mobile Chrome's speech engine was paused
         if (window.speechSynthesis.paused) {
           window.speechSynthesis.resume();
         }
@@ -160,8 +197,8 @@ export class AudioService {
           reject(new Error(e.error || 'SpeechSynthesis failed'));
         };
 
-        // Safety timeout in case mobile browser drops onend event
-        const maxDuration = Math.max(4000, text.length * 250);
+        // Safety timeout in case mobile browser drops the onend event
+        const maxDuration = Math.max(5000, text.length * 300);
         const timeout = setTimeout(() => {
           if (!isDone && this._isPlaying) {
             isDone = true;
@@ -174,7 +211,7 @@ export class AudioService {
         this.currentUtterance = utter;
         this._isPlaying = true;
 
-        // Slight microtask delay to prevent Android Chrome cancel-then-speak deadlock
+        // Small delay to avoid Android Chrome cancel-then-speak deadlock
         setTimeout(() => {
           try {
             window.speechSynthesis.speak(utter);
@@ -191,29 +228,35 @@ export class AudioService {
     });
   }
 
+  /** Public alias — always speaks Kannada */
   speak(text: string): Promise<void> {
     return this.speakKannada(text);
   }
 
   stop(): void {
+    // Stop native TTS if active
+    if (Capacitor.isNativePlatform() && this.nativeTTS) {
+      try {
+        this.nativeTTS.stop();
+      } catch { /* ignore */ }
+    }
+
+    // Stop HTML5 audio
     if (this.currentAudio) {
       try {
         this.currentAudio.pause();
         this.currentAudio.currentTime = 0;
-      } catch {
-        // Ignore stop error
-      }
+      } catch { /* ignore */ }
       this.currentAudio = null;
     }
 
-    if (this.isSupported()) {
+    // Stop Web Speech API
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       try {
         if (window.speechSynthesis.speaking) {
           window.speechSynthesis.cancel();
         }
-      } catch {
-        // Ignore cancel error
-      }
+      } catch { /* ignore */ }
     }
 
     this._isPlaying = false;
