@@ -9,7 +9,7 @@ const DEFAULT_PREFS: UserPreferences = {
   purpose: null,
   interests: [],
   level: null,
-  theme: 'system',
+  theme: 'light',
   textSize: 'md',
   audioEnabled: true,
   displayName: 'Guest',
@@ -40,7 +40,7 @@ export class PreferencesService {
   reset(): void {
     this._prefs.set(DEFAULT_PREFS);
     this.storage.remove(PREFS_KEY);
-    this.applyTheme('system');
+    this.applyTheme('light');
     this.applyTextSize('md');
   }
 
