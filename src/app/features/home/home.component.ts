@@ -5,6 +5,7 @@ import { PhraseService } from '../../core/services/phrase.service';
 import { AudioService } from '../../core/services/audio.service';
 import { BottomNavComponent } from '../../shared/components/bottom-nav/bottom-nav.component';
 import { Phrase } from '../../core/models/models';
+import { getTodayPhraseMeta } from '../../core/data/phrases.data';
 
 @Component({
   selector: 'app-home',
@@ -48,7 +49,10 @@ import { Phrase } from '../../core/models/models';
         <!-- 1. Daily Phrase Card -->
         <section class="card-phrase" aria-label="Today's phrase">
           <div class="phrase-header">
-            <span class="phrase-label">Phrase of the Day</span>
+            <div class="phrase-label-group">
+              <span class="day-chip">{{ todayMeta().day }}</span>
+              <span class="phrase-label">Phrase of the Day</span>
+            </div>
             <a routerLink="/situations" class="phrase-view-all" id="link-view-all-phrases">
               <span>View all</span>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -180,7 +184,7 @@ import { Phrase } from '../../core/models/models';
           </div>
         </section>
 
-        <!-- 4. Calendar banner: Coming up in Karnataka -->
+        <!-- 4. Coming up in Karnataka banner -->
         <a routerLink="/calendar" class="calendar-banner" id="banner-coming-up" aria-label="Coming up in Karnataka — Festivals, cultural events and more">
           <div class="calendar-icon-box" aria-hidden="true">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -193,7 +197,62 @@ import { Phrase } from '../../core/models/models';
           </div>
           <div class="calendar-text-col">
             <span class="calendar-title">Coming up in Karnataka</span>
-            <span class="calendar-sub">Festivals, cultural events and more</span>
+            <span class="calendar-sub">Festivals and cultural events</span>
+          </div>
+          <svg class="chevron-gray" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </a>
+
+        <!-- 5. Travel tools section (Scan a sign & Emergency kit) -->
+        <section class="travel-tools-section" aria-label="Travel tools">
+          <div class="travel-tools-header">
+            <h2 class="section-title">Travel tools</h2>
+          </div>
+          <div class="travel-tools-grid">
+            <a routerLink="/signboard-translate" class="travel-card card-scan" id="tool-signboard" aria-label="Scan a sign">
+              <div class="travel-icon scan-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+                  <line x1="8" y1="12" x2="16" y2="12"/>
+                </svg>
+              </div>
+              <div class="travel-text">
+                <span class="travel-title">Scan a sign</span>
+                <span class="travel-sub">Read Kannada text</span>
+              </div>
+            </a>
+
+            <a routerLink="/emergency-kit" class="travel-card card-emergency" id="tool-emergency" aria-label="Emergency kit">
+              <div class="travel-icon emergency-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              </div>
+              <div class="travel-text">
+                <span class="travel-title">Emergency kit</span>
+                <span class="travel-sub">Essential help offline</span>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <!-- 6. Numbers & auto fares banner -->
+        <a routerLink="/numbers" class="calendar-banner numbers-banner" id="banner-numbers-currency" aria-label="Numbers & auto fares — Numbers, currency and fare estimates">
+          <div class="calendar-icon-box numbers-icon-box" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="2" width="16" height="20" rx="2"/>
+              <line x1="8" y1="6" x2="16" y2="6"/>
+              <line x1="8" y1="10" x2="16" y2="10"/>
+              <line x1="8" y1="14" x2="16" y2="14"/>
+              <line x1="8" y1="18" x2="16" y2="18"/>
+            </svg>
+          </div>
+          <div class="calendar-text-col">
+            <span class="calendar-title">Numbers & auto fares</span>
+            <span class="calendar-sub">Numbers, currency and fare estimates</span>
           </div>
           <svg class="chevron-gray" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="9 18 15 12 9 6"></polyline>
@@ -337,14 +396,25 @@ import { Phrase } from '../../core/models/models';
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: space-evenly;
-      padding: 0.55rem 0.9rem calc(var(--nav-height) + var(--safe-bottom) + 0.35rem);
-      overflow: hidden;
+      justify-content: flex-start;
+      padding: 0.75rem 0.9rem calc(var(--nav-height) + var(--safe-bottom) + 1rem);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
       max-width: 480px;
       margin: 0 auto;
       width: 100%;
       box-sizing: border-box;
-      gap: clamp(0.35rem, 1vh, 0.65rem);
+      gap: 0.75rem;
+    }
+
+    .home-content::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .home-content::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 4px;
     }
 
     .card-phrase {
@@ -362,6 +432,23 @@ import { Phrase } from '../../core/models/models';
       display: flex;
       align-items: center;
       justify-content: space-between;
+    }
+
+    .phrase-label-group {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .day-chip {
+      background: #E8F5EF;
+      color: #176B57;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 0.15rem 0.5rem;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
     .phrase-label {
@@ -434,9 +521,16 @@ import { Phrase } from '../../core/models/models';
       transition: all 0.15s ease;
     }
 
-    .phrase-act-btn:hover {
-      background: #E5F3EC;
-      border-color: var(--color-primary);
+    @media (hover: hover) and (pointer: fine) {
+      .phrase-act-btn:hover {
+        background: #E5F3EC;
+        border-color: var(--color-primary);
+      }
+    }
+
+    .phrase-act-btn:focus:not(:focus-visible) {
+      outline: none;
+      border-color: #D1D5DB;
     }
 
     .phrase-act-btn.active {
@@ -577,6 +671,18 @@ import { Phrase } from '../../core/models/models';
       background: #F0FAF6;
     }
 
+    .numbers-icon-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: #E8F5EF;
+      color: #176B57;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
     .calendar-icon-box {
       color: var(--color-primary);
       display: flex;
@@ -610,6 +716,84 @@ import { Phrase } from '../../core/models/models';
       flex-shrink: 0;
     }
 
+    /* Travel tools section matching mockup */
+    .travel-tools-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .travel-tools-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .view-all-link {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--color-primary);
+      text-decoration: none;
+    }
+
+    .travel-tools-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .travel-card {
+      border-radius: 16px;
+      padding: 0.95rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      min-height: 94px;
+      box-sizing: border-box;
+    }
+
+    .card-scan {
+      border: 1.5px solid #E5E7EB;
+    }
+
+    .card-scan .scan-icon {
+      color: var(--color-primary);
+    }
+
+    .card-emergency {
+      border: 1.5px solid #E5E7EB;
+    }
+
+    .card-emergency .emergency-icon {
+      color: #E53935;
+    }
+
+    .travel-icon {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .travel-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .travel-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1F2937;
+      line-height: 1.2;
+    }
+
+    .travel-sub {
+      font-size: 0.74rem;
+      color: #6B7280;
+    }
+
     .toast {
       position: fixed;
       bottom: calc(var(--nav-height) + 1.25rem);
@@ -628,14 +812,15 @@ import { Phrase } from '../../core/models/models';
   `],
 })
 export class HomeComponent implements OnInit {
+  todayMeta = signal(getTodayPhraseMeta());
   dailyPhrase = signal<Phrase>({
-    id: 'p005',
-    situationId: 'directions',
-    kannada: 'ಇದು ಎಲ್ಲಿದೆ?',
-    transliteration: 'Idu ellide?',
-    english: 'Where is this?',
+    id: 'p001',
+    situationId: 'auto-transport',
+    kannada: 'ನನಗೆ ರೈಲು ನಿಲ್ದಾಣಕ್ಕೆ ಹೋಗಬೇಕು',
+    transliteration: 'Nanage railu nildanakke hogabeku',
+    english: 'I want to go to the railway station.',
     verified: true,
-    tags: ['directions', 'daily'],
+    tags: ['transport', 'daily'],
   });
 
   isSaved = signal(false);
@@ -654,23 +839,25 @@ export class HomeComponent implements OnInit {
     const name = p.displayName || 'GU';
     this.initials.set(name.slice(0, 2).toUpperCase());
 
+    this.todayMeta.set(getTodayPhraseMeta());
     const dp = this.phraseService.getDailyPhrase();
     if (dp) {
-      this.dailyPhrase.set({
-        ...dp,
-        kannada: 'ಇದು ಎಲ್ಲಿದೆ?',
-        transliteration: 'Idu ellide?',
-        english: 'Where is this?',
-      });
+      this.dailyPhrase.set(dp);
     }
 
     this.isSaved.set(this.phraseService.isPhraseSaved(this.dailyPhrase().id));
   }
 
-  speakPhrase(): void {
+  async speakPhrase(): Promise<void> {
     const phrase = this.dailyPhrase();
     if (!phrase) return;
-    this.audioService.speak(phrase.kannada);
+    try {
+      await this.audioService.speak(phrase.kannada);
+    } finally {
+      if (typeof document !== 'undefined') {
+        (document.activeElement as HTMLElement)?.blur();
+      }
+    }
   }
 
   toggleSavePhrase(): void {

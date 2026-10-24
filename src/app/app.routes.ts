@@ -51,6 +51,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/conversation/conversation.component').then(m => m.ConversationComponent),
   },
   {
+    path: 'numbers',
+    loadComponent: () => import('./features/numbers/numbers.component').then(m => m.NumbersComponent),
+  },
+  {
     path: 'calendar',
     loadComponent: () => import('./features/calendar/calendar.component').then(m => m.CalendarComponent),
   },
@@ -69,6 +73,18 @@ export const routes: Routes = [
   {
     path: 'settings',
     loadComponent: () => import('./features/settings/settings.component').then(m => m.SettingsComponent),
+  },
+  {
+    path: 'signboard-translate',
+    loadComponent: () => import('./features/signboard-translate/signboard-translate.component').then(m => m.SignboardTranslateComponent),
+  },
+  {
+    path: 'emergency-kit',
+    loadComponent: () => import('./features/emergency-kit/emergency-kit.component').then(m => m.EmergencyKitComponent),
+  },
+  {
+    path: 'auto-fare',
+    loadComponent: () => import('./features/auto-fare/auto-fare.component').then(m => m.AutoFareComponent),
   },
   { path: '**', redirectTo: 'home' },
 ];
