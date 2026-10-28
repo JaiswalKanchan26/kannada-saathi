@@ -72,7 +72,7 @@ Open the local URL displayed in the terminal.
 
 ## Review Notes
 
-1, Audio depends on the phone's available Kannada speech engine and voice data.
+1. Audio depends on the phone's available Kannada speech engine and voice data.
 2. Fare calculations are estimates, not guaranteed quotes.
 3. Signboard recognition may vary with lighting, image quality, and fonts. If camera not working due to some permission errors, try uploading a clean image by clicking on **Gallary** Button.
 4. Camera and microphone features may require device permissions.
