@@ -25,11 +25,12 @@ export interface Location {
  */
 @Injectable({ providedIn: 'root' })
 export class AutoFareService {
-  // Fare constants (Bengaluru 2024 approximate rates)
-  private readonly BASE_FARE = 30;       // ₹ for first 2 km
-  private readonly BASE_DISTANCE = 2;    // km
-  private readonly PER_KM_RATE = 15;     // ₹ per additional km
-  private readonly NIGHT_SURCHARGE = 0.10; // 10% between 10 PM – 5 AM
+  // Fare constants (Bengaluru 2024 approximate rates) — public so UI can display them
+  readonly BASE_FARE = 30;                    // ₹ for first BASE_DISTANCE km
+  readonly BASE_DISTANCE = 2;                 // km included in base fare
+  readonly PER_KM_RATE = 15;                  // ₹ per additional km
+  readonly NIGHT_SURCHARGE_PCT = 10;          // % surcharge between 10 PM – 5 AM
+  private readonly NIGHT_SURCHARGE = 0.10;    // decimal equivalent (used internally)
 
   /** Geocode a place name using Nominatim (free, no key). */
   async geocode(query: string): Promise<Location | null> {
