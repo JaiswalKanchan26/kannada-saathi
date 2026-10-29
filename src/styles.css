@@ -17,15 +17,15 @@
   --color-primary-200: #b2e4d0;
 
   /* Background / Surface */
-  --color-bg: #F5F3ED;
+  --color-bg: #FFFFFF;
   --color-bg-card: #FFFFFF;
   --color-bg-soft: #E5F3EC;
-  --color-bg-subtle: #F0EDE6;
+  --color-bg-subtle: #F8F9FA;
 
   /* Text */
-  --color-text-primary: #282E2B;
-  --color-text-secondary: #5A6460;
-  --color-text-muted: #8A9490;
+  --color-text-primary: #1F2937;
+  --color-text-secondary: #4B5563;
+  --color-text-muted: #6B7280;
   --color-text-on-primary: #FFFFFF;
 
   /* Accent */
@@ -34,8 +34,8 @@
   --color-accent-festival: #E8A020;
 
   /* Borders */
-  --color-border: #D8D3C8;
-  --color-border-soft: #E8E4DC;
+  --color-border: #E5E7EB;
+  --color-border-soft: #F3F4F6;
 
   /* Status */
   --color-success: #2D8653;
@@ -60,20 +60,277 @@
 }
 
 /* Dark Mode Tokens */
-[data-theme="dark"] {
+[data-theme="dark"],
+html.dark,
+body[data-theme="dark"] {
   --color-bg: #0F1A16;
-  --color-bg-card: #1A2820;
-  --color-bg-soft: #162420;
-  --color-bg-subtle: #141E1A;
-  --color-text-primary: #E8EDE9;
-  --color-text-secondary: #9DB0A8;
-  --color-text-muted: #687870;
-  --color-border: #2A3C34;
-  --color-border-soft: #223028;
+  --color-bg-card: #16241E;
+  --color-bg-soft: #1E332A;
+  --color-bg-subtle: #14201A;
+  --color-text-primary: #F3F6F4;
+  --color-text-secondary: #A3B5AC;
+  --color-text-muted: #738A7F;
+  --color-border: #24382E;
+  --color-border-soft: #1E3027;
   --shadow-card: 0 2px 8px rgba(0,0,0,0.30);
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.20);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.25);
   --shadow-lg: 0 8px 24px rgba(0,0,0,0.35);
+}
+
+/* ============================================================
+   Dark Mode Universal Surface & Component Styling
+   ============================================================ */
+[data-theme="dark"],
+html.dark {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] body,
+html.dark body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+}
+
+/* Viewport Containers across all screens */
+[data-theme="dark"] [class$="-viewport"],
+html.dark [class$="-viewport"] {
+  background-color: var(--color-bg) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Universal Cards & Containers */
+[data-theme="dark"] .ks-card,
+[data-theme="dark"] .input-card,
+[data-theme="dark"] .result-card,
+[data-theme="dark"] .other-result-card,
+[data-theme="dark"] .daily-phrase-card,
+[data-theme="dark"] .situation-card,
+[data-theme="dark"] .phrase-card,
+[data-theme="dark"] .phrase-hero-card,
+[data-theme="dark"] .word-breakdown-card,
+[data-theme="dark"] .word-chip,
+[data-theme="dark"] .situation-phrase-card,
+[data-theme="dark"] .lesson-card,
+[data-theme="dark"] .lesson-hero-card,
+[data-theme="dark"] .quiz-option,
+[data-theme="dark"] .settings-card,
+[data-theme="dark"] .settings-group,
+[data-theme="dark"] .profile-card,
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .stat-box,
+[data-theme="dark"] .calendar-card,
+[data-theme="dark"] .festival-card,
+[data-theme="dark"] .event-card,
+[data-theme="dark"] .saved-phrase-card,
+[data-theme="dark"] .saved-item,
+[data-theme="dark"] .calendar-banner,
+[data-theme="dark"] .quick-practice-card,
+[data-theme="dark"] .num-hero-card,
+[data-theme="dark"] .num-pad-card,
+[data-theme="dark"] .phrase-quick-card,
+[data-theme="dark"] .location-card,
+[data-theme="dark"] .dist-card,
+[data-theme="dark"] .map-preview-card,
+[data-theme="dark"] .distance-section-outer,
+[data-theme="dark"] .rate-table,
+[data-theme="dark"] .ocr-tips,
+[data-theme="dark"] .flashcard,
+[data-theme="dark"] .act-btn,
+[data-theme="dark"] .act-icon-box,
+html.dark .input-card,
+html.dark .result-card,
+html.dark .other-result-card,
+html.dark .daily-phrase-card,
+html.dark .situation-card,
+html.dark .phrase-card,
+html.dark .phrase-hero-card,
+html.dark .lesson-card,
+html.dark .settings-card,
+html.dark .profile-card,
+html.dark .stat-card,
+html.dark .saved-phrase-card,
+html.dark .num-hero-card,
+html.dark .num-pad-card,
+html.dark .location-card,
+html.dark .dist-card,
+html.dark .rate-table,
+html.dark .ocr-tips,
+html.dark .flashcard {
+  background-color: var(--color-bg-card) !important;
+  border-color: var(--color-border-soft) !important;
+  color: var(--color-text-primary) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35) !important;
+}
+
+[data-theme="dark"] .charge-time-banner,
+html.dark .charge-time-banner {
+  background-color: #1A2E26 !important;
+  border-color: #244438 !important;
+}
+
+[data-theme="dark"] .charge-time-banner .banner-title,
+html.dark .charge-time-banner .banner-title {
+  color: #34D399 !important;
+}
+
+[data-theme="dark"] .charge-time-banner .banner-subtitle,
+html.dark .charge-time-banner .banner-subtitle {
+  color: #A3B5AC !important;
+}
+
+[data-theme="dark"] .rate-val,
+html.dark .rate-val {
+  color: var(--color-text-secondary) !important;
+}
+
+[data-theme="dark"] .dist-number-input,
+html.dark .dist-number-input,
+[data-theme="dark"] .card-value,
+html.dark .card-value {
+  color: var(--color-text-primary) !important;
+}
+
+[data-theme="dark"] .ocr-tips,
+html.dark .ocr-tips {
+  background-color: #13241C !important;
+  border-color: #1E382C !important;
+}
+
+[data-theme="dark"] .tip-item,
+html.dark .tip-item {
+  color: #D1E7DD !important;
+}
+
+/* Inputs, Textareas & Search Boxes */
+[data-theme="dark"] .search-wrap,
+[data-theme="dark"] .search-box,
+[data-theme="dark"] .input-row,
+html.dark .search-wrap,
+html.dark .search-box,
+html.dark .input-row {
+  background-color: var(--color-bg-subtle) !important;
+  border-color: var(--color-border) !important;
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] .phrase-input,
+[data-theme="dark"] .search-input,
+html.dark input,
+html.dark .phrase-input {
+  color: var(--color-text-primary) !important;
+  background-color: transparent !important;
+}
+
+/* Text Overrides for Dark Mode */
+[data-theme="dark"] .hero-english,
+[data-theme="dark"] .result-en,
+[data-theme="dark"] .other-en,
+[data-theme="dark"] .phrase-en,
+[data-theme="dark"] .phrase-english,
+[data-theme="dark"] .sit-name,
+[data-theme="dark"] .lesson-title,
+[data-theme="dark"] .setting-label,
+[data-theme="dark"] .profile-name,
+[data-theme="dark"] .event-title,
+html.dark .hero-english,
+html.dark .result-en,
+html.dark .other-en,
+html.dark .sit-name {
+  color: var(--color-text-primary) !important;
+}
+
+[data-theme="dark"] .hero-translit,
+[data-theme="dark"] .result-tr,
+[data-theme="dark"] .other-tr,
+[data-theme="dark"] .phrase-tr,
+[data-theme="dark"] .phrase-translit,
+[data-theme="dark"] .transliteration,
+[data-theme="dark"] .sit-count,
+[data-theme="dark"] .lesson-subtitle,
+[data-theme="dark"] .setting-sub,
+html.dark .hero-translit,
+html.dark .result-tr,
+html.dark .other-tr,
+html.dark .transliteration {
+  color: var(--color-text-secondary) !important;
+}
+
+/* Scenario & Category Chips */
+[data-theme="dark"] .scenario-chip,
+[data-theme="dark"] .category-chip,
+[data-theme="dark"] .cat-chip,
+[data-theme="dark"] .level-chip,
+[data-theme="dark"] .pill-btn,
+[data-theme="dark"] .amount-chip,
+html.dark .scenario-chip,
+html.dark .amount-chip {
+  background-color: var(--color-bg-card) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+[data-theme="dark"] .scenario-chip.active,
+[data-theme="dark"] .category-chip.active,
+[data-theme="dark"] .cat-chip.active,
+[data-theme="dark"] .amount-chip.active,
+html.dark .scenario-chip.active,
+html.dark .amount-chip.active {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: #FFFFFF !important;
+}
+
+/* Secondary Action Buttons */
+[data-theme="dark"] .show-to-btn,
+[data-theme="dark"] .save-action-btn,
+[data-theme="dark"] .find-btn,
+[data-theme="dark"] .num-btn,
+[data-theme="dark"] .clear-x-btn,
+html.dark .show-to-btn,
+html.dark .save-action-btn,
+html.dark .find-btn {
+  background-color: var(--color-bg-card) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* Tip & Info Banners */
+[data-theme="dark"] .tip-card,
+[data-theme="dark"] .local-tip-box,
+[data-theme="dark"] .tip-box,
+html.dark .tip-card {
+  background-color: #11281E !important;
+  border-color: #1A4030 !important;
+  color: #C8E8DA !important;
+}
+
+[data-theme="dark"] .tip-body,
+[data-theme="dark"] .tip-text,
+html.dark .tip-body {
+  color: #C8E8DA !important;
+}
+
+[data-theme="dark"] .tip-icon-box,
+html.dark .tip-icon-box {
+  background-color: #16382A !important;
+  color: #34D399 !important;
+}
+
+/* Mini Listen Buttons */
+[data-theme="dark"] .mini-listen-btn,
+html.dark .mini-listen-btn {
+  background-color: #1B382A !important;
+  color: #34D399 !important;
+}
+
+/* Word Chips Breakdown */
+[data-theme="dark"] .word-chip-card,
+[data-theme="dark"] .word-box {
+  background-color: var(--color-bg-card) !important;
+  border-color: var(--color-border-soft) !important;
 }
 
 /* Base */
@@ -806,3 +1063,58 @@ a.text-link {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ============================================================
+   Prevent sticky hover & focus outlines/borders on clicked buttons
+   ============================================================ */
+button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* On touch devices, prevent sticky hover border colors when tap is finished */
+@media (hover: none) and (pointer: coarse) {
+  button:hover:not(:active):not(.active) {
+    border-color: inherit;
+    background-color: inherit;
+  }
+}
+
+/* ============================================================
+   Universal Speaking / Audio Button States & Animations
+   ============================================================ */
+.speaking,
+button.speaking,
+.is-speaking {
+  position: relative;
+  background-color: var(--color-primary, #176B57) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 0 3px rgba(23, 107, 87, 0.35) !important;
+  animation: speaking-pulse 1.3s ease-in-out infinite !important;
+}
+
+.speaking svg,
+button.speaking svg,
+.is-speaking svg {
+  animation: audio-wave 1s ease-in-out infinite alternate;
+}
+
+@keyframes speaking-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba(23, 107, 87, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(23, 107, 87, 0.12);
+  }
+}
+
+@keyframes audio-wave {
+  0% { transform: scale(0.95); opacity: 0.85; }
+  100% { transform: scale(1.1); opacity: 1; }
+}
+
+/* Ensure Kannada font has proper vertical line-height so accents don't clip */
+.font-kannada {
+  font-family: var(--font-kannada);
+  line-height: 1.45 !important;
+}
+
