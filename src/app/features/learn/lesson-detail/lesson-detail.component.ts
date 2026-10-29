@@ -83,13 +83,19 @@ import { LessonPhrase } from '../../../core/data/lessons.data';
 
               <!-- Listen Audio Button -->
               <div class="flashcard-audio-row">
-                <button class="listen-btn" (click)="playPhrase()" [attr.aria-label]="'Listen to: ' + currentPhrase()?.english" id="btn-lesson-listen">
+                <button
+                  class="listen-btn"
+                  [class.speaking]="isSpeaking()"
+                  (click)="playPhrase()"
+                  [attr.aria-label]="'Listen to: ' + currentPhrase()?.english"
+                  id="btn-lesson-listen"
+                >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
                     <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
                     <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
                   </svg>
-                  <span>Listen Pronunciation</span>
+                  <span>{{ isSpeaking() ? 'Playing...' : 'Listen Pronunciation' }}</span>
                 </button>
               </div>
             </div>
@@ -345,10 +351,36 @@ import { LessonPhrase } from '../../../core/data/lessons.data';
       transition: all 0.15s ease;
     }
 
-    .listen-btn:hover {
-      background: #D9F2E8;
-      border-color: #176B57;
-      transform: translateY(-1px);
+    @media (hover: hover) and (pointer: fine) {
+      .listen-btn:hover {
+        background: #D9F2E8;
+        border-color: #176B57;
+        transform: translateY(-1px);
+      }
+    }
+
+    .listen-btn:focus:not(:focus-visible) {
+      outline: none;
+      border-color: rgba(23, 107, 87, 0.15);
+    }
+
+    .listen-btn.speaking {
+      background: var(--color-primary, #176B57) !important;
+      color: #FFFFFF !important;
+      border-color: var(--color-primary, #176B57) !important;
+      box-shadow: 0 0 0 3px rgba(23, 107, 87, 0.3) !important;
+      animation: speaking-pulse 1.3s ease-in-out infinite;
+    }
+
+    [data-theme="dark"] .listen-btn {
+      background: #193327;
+      border-color: #244438;
+      color: #34D399;
+    }
+
+    [data-theme="dark"] .listen-btn.speaking {
+      background: var(--color-primary, #176B57) !important;
+      color: #FFFFFF !important;
     }
 
     /* Navigation Controls Row */
@@ -562,6 +594,7 @@ export class LessonDetailComponent implements OnInit {
   phrases = signal<LessonPhrase[]>([]);
   currentIndex = signal(0);
   completed = signal(false);
+  isSpeaking = signal(false);
 
   constructor(
     private route: ActivatedRoute,
@@ -618,10 +651,23 @@ export class LessonDetailComponent implements OnInit {
   async playPhrase(): Promise<void> {
     const phrase = this.currentPhrase();
     if (!phrase) return;
+
+    if (this.isSpeaking()) {
+      this.audioService.stop();
+      this.isSpeaking.set(false);
+      return;
+    }
+
+    this.isSpeaking.set(true);
     try {
       await this.audioService.speak(phrase.kannada);
     } catch {
       // Silently finish
+    } finally {
+      this.isSpeaking.set(false);
+      if (typeof document !== 'undefined') {
+        (document.activeElement as HTMLElement)?.blur();
+      }
     }
   }
 

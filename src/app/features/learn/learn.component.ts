@@ -13,12 +13,9 @@ import { Lesson } from '../../core/models/models';
       <!-- Solid Dark Green Top Header with Curved Bottom -->
       <header class="learn-header">
         <div class="header-side-box">
-          <div class="header-icon-badge" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-            </svg>
-          </div>
+        <button class="back-btn" id="btn-af-back" (click)="router.navigate(['/home'])" aria-label="Back">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
         </div>
 
         <h1 class="header-title">Learn Kannada</h1>

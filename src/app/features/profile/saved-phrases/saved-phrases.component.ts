@@ -70,7 +70,8 @@ import { Phrase } from '../../../core/models/models';
                   <!-- Listen Button -->
                   <button
                     class="action-btn audio-btn"
-                    (click)="playAudio(p.kannada)"
+                    [class.speaking]="playingPhraseId() === p.id"
+                    (click)="playAudio(p.kannada, p.id)"
                     title="Listen pronunciation"
                     aria-label="Listen audio"
                   >
@@ -374,6 +375,19 @@ import { Phrase } from '../../../core/models/models';
       border-color: #176B57;
     }
 
+    .audio-btn.speaking {
+      background: #176B57 !important;
+      color: #FFFFFF !important;
+      border-color: #176B57 !important;
+      animation: speaking-pulse 1.3s ease-in-out infinite;
+    }
+
+    [data-theme="dark"] .audio-btn {
+      background: #193327;
+      border-color: #244438;
+      color: #34D399;
+    }
+
     .remove-btn {
       color: #9CA3AF;
     }
@@ -453,6 +467,7 @@ import { Phrase } from '../../../core/models/models';
 export class SavedPhrasesComponent implements OnInit {
   savedPhrases = signal<Phrase[]>([]);
   searchQuery = '';
+  playingPhraseId = signal<string | null>(null);
 
   constructor(
     private phraseService: PhraseService,
@@ -479,8 +494,26 @@ export class SavedPhrasesComponent implements OnInit {
     );
   }
 
-  playAudio(text: string): void {
-    this.audioService.speak(text);
+  async playAudio(text: string, phraseId?: string): Promise<void> {
+    if (!text) return;
+    if (this.playingPhraseId()) {
+      this.audioService.stop();
+      this.playingPhraseId.set(null);
+      return;
+    }
+    if (phraseId) {
+      this.playingPhraseId.set(phraseId);
+    }
+    try {
+      await this.audioService.speak(text);
+    } catch {
+      // Silently catch
+    } finally {
+      this.playingPhraseId.set(null);
+      if (typeof document !== 'undefined') {
+        (document.activeElement as HTMLElement)?.blur();
+      }
+    }
   }
 
   removePhrase(id: string): void {

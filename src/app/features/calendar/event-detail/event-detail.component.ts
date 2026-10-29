@@ -234,6 +234,7 @@ const SAVED_GREETINGS_KEY = 'ks_saved_greetings';
                       <!-- Listen Button -->
                       <button
                         class="action-pill-btn listen-btn"
+                        [class.speaking]="playingGreeting() === g.kannada"
                         (click)="playGreeting(g.kannada)"
                         aria-label="Listen pronunciation"
                         [id]="'btn-listen-' + i"
@@ -242,7 +243,7 @@ const SAVED_GREETINGS_KEY = 'ks_saved_greetings';
                           <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
                           <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
                         </svg>
-                        <span>Listen</span>
+                        <span>{{ playingGreeting() === g.kannada ? 'Playing...' : 'Listen' }}</span>
                       </button>
 
                       <!-- Show Phrase Modal Button -->
@@ -531,13 +532,17 @@ const SAVED_GREETINGS_KEY = 'ks_saved_greetings';
           <!-- Bottom Floating Action Pill Bar -->
           <div class="show-modal-floating-bar">
             <!-- Listen -->
-            <button class="modal-float-action" (click)="playGreeting(currentShowGreeting()!.kannada)">
+            <button
+              class="modal-float-action"
+              [class.speaking]="playingGreeting() === currentShowGreeting()!.kannada"
+              (click)="playGreeting(currentShowGreeting()!.kannada)"
+            >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
                 <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
               </svg>
-              <span>Listen</span>
+              <span>{{ playingGreeting() === currentShowGreeting()!.kannada ? 'Playing...' : 'Listen' }}</span>
             </button>
 
             <!-- Show Full (close or maximize) -->
@@ -1014,6 +1019,17 @@ const SAVED_GREETINGS_KEY = 'ks_saved_greetings';
 
     .action-pill-btn.listen-btn:hover {
       background: #135545;
+    }
+
+    .action-pill-btn.listen-btn.speaking {
+      background: #0f4f40 !important;
+      animation: speaking-pulse 1.3s ease-in-out infinite;
+    }
+
+    [data-theme="dark"] .action-pill-btn.outline-btn {
+      background: #16241E;
+      color: #F3F6F4;
+      border-color: #24382E;
     }
 
     .action-pill-btn.outline-btn {
@@ -1653,6 +1669,7 @@ export class EventDetailComponent implements OnInit {
 
   // Toast feedback
   toastMessage = signal<string>('');
+  playingGreeting = signal<string | null>(null);
   private toastTimer: any = null;
 
   currentShowGreeting = computed<FestivalGreeting | null>(() => {
@@ -1712,8 +1729,24 @@ export class EventDetailComponent implements OnInit {
     return 'Festival';
   }
 
-  playGreeting(text: string): void {
-    this.audioService.speak(text);
+  async playGreeting(text: string): Promise<void> {
+    if (!text) return;
+    if (this.playingGreeting()) {
+      this.audioService.stop();
+      this.playingGreeting.set(null);
+      return;
+    }
+    this.playingGreeting.set(text);
+    try {
+      await this.audioService.speak(text);
+    } catch {
+      // Silently catch
+    } finally {
+      this.playingGreeting.set(null);
+      if (typeof document !== 'undefined') {
+        (document.activeElement as HTMLElement)?.blur();
+      }
+    }
   }
 
   // Festival bookmark toggle

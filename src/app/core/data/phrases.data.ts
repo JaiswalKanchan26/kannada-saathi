@@ -288,11 +288,26 @@ export const PHRASES: Phrase[] = [
   },
 ];
 
-// Featured daily phrase rotation
-export const DAILY_PHRASES = ['p001', 'p007', 'p013', 'p017', 'p021', 'p025'];
+// Featured daily phrase rotation across all 7 days of the week
+export const WEEKLY_DAILY_PHRASES: { day: string; phraseId: string; tag: string }[] = [
+  { day: 'Sunday', phraseId: 'p007', tag: 'Dining' },         // Sunday: Ondu meju kodi
+  { day: 'Monday', phraseId: 'p006', tag: 'Commute' },        // Monday: Meter haki
+  { day: 'Tuesday', phraseId: 'p016', tag: 'Payments' },      // Tuesday: UPI aguttadeye
+  { day: 'Wednesday', phraseId: 'p017', tag: 'Directions' },  // Wednesday: Idu ellide
+  { day: 'Thursday', phraseId: 'p014', tag: 'Bargain' },      // Thursday: Svalpa kadime madi
+  { day: 'Friday', phraseId: 'p011', tag: 'Cafe' },           // Friday: Niru kodi
+  { day: 'Saturday', phraseId: 'p001', tag: 'Travel' },       // Saturday: Railu nildanakke hogabeku
+];
 
-// Get today's phrase id
+export const DAILY_PHRASES = WEEKLY_DAILY_PHRASES.map(w => w.phraseId);
+
+// Get today's phrase id based on day of the week (0 = Sunday ... 6 = Saturday)
 export function getDailyPhraseId(): string {
-  const day = new Date().getDate();
-  return DAILY_PHRASES[day % DAILY_PHRASES.length];
+  const dayOfWeek = new Date().getDay();
+  return WEEKLY_DAILY_PHRASES[dayOfWeek]?.phraseId || 'p001';
+}
+
+export function getTodayPhraseMeta(): { day: string; tag: string } {
+  const dayOfWeek = new Date().getDay();
+  return WEEKLY_DAILY_PHRASES[dayOfWeek] || { day: 'Today', tag: 'Daily' };
 }

@@ -404,10 +404,17 @@ import { SITUATIONS } from '../../../core/data/situations.data';
       transition: all 0.15s ease;
     }
 
-    .hero-act-btn:hover {
-      background: #D9F2E8;
-      border-color: #176B57;
-      transform: translateY(-1px);
+    @media (hover: hover) and (pointer: fine) {
+      .hero-act-btn:hover {
+        background: #D9F2E8;
+        border-color: #176B57;
+        transform: translateY(-1px);
+      }
+    }
+
+    .hero-act-btn:focus:not(:focus-visible) {
+      outline: none;
+      border-color: rgba(23, 107, 87, 0.12);
     }
 
     .hero-act-btn.active {
@@ -830,6 +837,9 @@ export class PhraseDetailComponent implements OnInit {
       // Silently finish
     } finally {
       this.isPlaying.set(false);
+      if (typeof document !== 'undefined') {
+        (document.activeElement as HTMLElement)?.blur();
+      }
     }
   }
 
