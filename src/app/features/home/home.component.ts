@@ -69,13 +69,19 @@ import { getTodayPhraseMeta } from '../../core/data/phrases.data';
           </div>
 
           <div class="phrase-actions">
-            <button class="phrase-act-btn" id="btn-daily-listen" (click)="speakPhrase()" aria-label="Listen to phrase pronunciation">
+            <button
+              class="phrase-act-btn"
+              [class.speaking]="isSpeaking()"
+              id="btn-daily-listen"
+              (click)="speakPhrase()"
+              aria-label="Listen to phrase pronunciation"
+            >
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
                 <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
               </svg>
-              <span>Listen</span>
+              <span>{{ isSpeaking() ? 'Playing...' : 'Listen' }}</span>
             </button>
 
             <button class="phrase-act-btn" [class.active]="isSaved()" id="btn-daily-save" (click)="toggleSavePhrase()" aria-label="Save this phrase">
@@ -114,6 +120,41 @@ import { getTodayPhraseMeta } from '../../core/data/phrases.data';
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
         </button>
+
+                <!-- 5. Travel tools section (Scan a sign & Emergency kit) -->
+        <section class="travel-tools-section" aria-label="Travel tools">
+          <div class="travel-tools-header">
+            <h2 class="section-title">Travel tools</h2>
+          </div>
+          <div class="travel-tools-grid">
+            <a routerLink="/signboard-translate" class="travel-card card-scan" id="tool-signboard" aria-label="Scan a sign">
+              <div class="travel-icon scan-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+                  <line x1="8" y1="12" x2="16" y2="12"/>
+                </svg>
+              </div>
+              <div class="travel-text">
+                <span class="travel-title">Scan a sign</span>
+                <span class="travel-sub">Read Kannada text</span>
+              </div>
+            </a>
+
+            <a routerLink="/emergency-kit" class="travel-card card-emergency" id="tool-emergency" aria-label="Emergency kit">
+              <div class="travel-icon emergency-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              </div>
+              <div class="travel-text">
+                <span class="travel-title">Emergency kit</span>
+                <span class="travel-sub">Essential help offline</span>
+              </div>
+            </a>
+          </div>
+        </section>
 
         <!-- 3. Explore by situation -->
         <section class="situations-section" aria-label="Explore by situation">
@@ -203,41 +244,6 @@ import { getTodayPhraseMeta } from '../../core/data/phrases.data';
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
         </a>
-
-        <!-- 5. Travel tools section (Scan a sign & Emergency kit) -->
-        <section class="travel-tools-section" aria-label="Travel tools">
-          <div class="travel-tools-header">
-            <h2 class="section-title">Travel tools</h2>
-          </div>
-          <div class="travel-tools-grid">
-            <a routerLink="/signboard-translate" class="travel-card card-scan" id="tool-signboard" aria-label="Scan a sign">
-              <div class="travel-icon scan-icon" aria-hidden="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
-                  <line x1="8" y1="12" x2="16" y2="12"/>
-                </svg>
-              </div>
-              <div class="travel-text">
-                <span class="travel-title">Scan a sign</span>
-                <span class="travel-sub">Read Kannada text</span>
-              </div>
-            </a>
-
-            <a routerLink="/emergency-kit" class="travel-card card-emergency" id="tool-emergency" aria-label="Emergency kit">
-              <div class="travel-icon emergency-icon" aria-hidden="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="12" y1="8" x2="12" y2="12"/>
-                  <line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-              </div>
-              <div class="travel-text">
-                <span class="travel-title">Emergency kit</span>
-                <span class="travel-sub">Essential help offline</span>
-              </div>
-            </a>
-          </div>
-        </section>
 
         <!-- 6. Numbers & auto fares banner -->
         <a routerLink="/numbers" class="calendar-banner numbers-banner" id="banner-numbers-currency" aria-label="Numbers & auto fares — Numbers, currency and fare estimates">
@@ -539,6 +545,25 @@ import { getTodayPhraseMeta } from '../../core/data/phrases.data';
       border-color: var(--color-primary);
     }
 
+    .phrase-act-btn.speaking {
+      background: var(--color-primary) !important;
+      color: #FFFFFF !important;
+      border-color: var(--color-primary) !important;
+      box-shadow: 0 0 0 3px rgba(23, 107, 87, 0.3) !important;
+      animation: speaking-pulse 1.3s ease-in-out infinite;
+    }
+
+    [data-theme="dark"] .phrase-act-btn {
+      background: #193327;
+      border-color: #244438;
+      color: #34D399;
+    }
+
+    [data-theme="dark"] .phrase-act-btn.speaking {
+      background: var(--color-primary) !important;
+      color: #FFFFFF !important;
+    }
+
     .speak-banner {
       width: 100%;
       background: var(--color-primary);
@@ -672,10 +697,6 @@ import { getTodayPhraseMeta } from '../../core/data/phrases.data';
     }
 
     .numbers-icon-box {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      background: #E8F5EF;
       color: #176B57;
       display: flex;
       align-items: center;
@@ -824,6 +845,7 @@ export class HomeComponent implements OnInit {
   });
 
   isSaved = signal(false);
+  isSpeaking = signal(false);
   showCopiedToast = signal(false);
   initials = signal('GU');
 
@@ -851,9 +873,20 @@ export class HomeComponent implements OnInit {
   async speakPhrase(): Promise<void> {
     const phrase = this.dailyPhrase();
     if (!phrase) return;
+
+    if (this.isSpeaking()) {
+      this.audioService.stop();
+      this.isSpeaking.set(false);
+      return;
+    }
+
+    this.isSpeaking.set(true);
     try {
       await this.audioService.speak(phrase.kannada);
+    } catch {
+      // Silently finish
     } finally {
+      this.isSpeaking.set(false);
       if (typeof document !== 'undefined') {
         (document.activeElement as HTMLElement)?.blur();
       }

@@ -54,12 +54,11 @@ interface SampleSignboard {
               <div class="scan-laser"></div>
             </div>
 
-            <!-- Hidden File Input for Gallery / Upload -->
+            <!-- Hidden File Input for Gallery / Upload (no capture attribute, opens phone gallery) -->
             <input
-              #fileInput
+              #galleryInput
               type="file"
               accept="image/*"
-              capture="environment"
               style="display:none"
               (change)="onFileSelected($event)"
               id="sb-file-input"
@@ -72,7 +71,7 @@ interface SampleSignboard {
                 <span>Scan Signboard</span>
               </button>
 
-              <button class="gallery-action-btn" id="btn-sb-gallery" (click)="fileInput.click()">
+              <button class="gallery-action-btn" id="btn-sb-gallery" (click)="openGallery(galleryInput)">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 <span>Gallery</span>
               </button>
@@ -104,12 +103,21 @@ interface SampleSignboard {
 
         <!-- RESULT STATE (MATCHING MOCKUP) -->
         @if (state() === 'result') {
-          <!-- Visual preview frame with road sign -->
+          <!-- Visual preview frame with road sign or captured image -->
           <div class="result-preview-frame">
-            <div class="signboard-board result-board">
-              <div class="signboard-kn font-kannada">{{ detectedText() }}</div>
-              <div class="signboard-en">{{ translitText() || translatedText() }}</div>
-            </div>
+            @if (capturedImage()) {
+              <img [src]="capturedImage()" alt="Captured signboard" class="result-captured-img" />
+              <div class="result-img-overlay">
+                <div class="ocr-tag-floating font-kannada">
+                  {{ isKannadaSignboard() ? detectedText() : translatedText() }}
+                </div>
+              </div>
+            } @else {
+              <div class="signboard-board result-board">
+                <div class="signboard-kn font-kannada">{{ isKannadaSignboard() ? detectedText() : translatedText() }}</div>
+                <div class="signboard-en">{{ isKannadaSignboard() ? translatedText() : detectedText() }}</div>
+              </div>
+            }
             <!-- Cyan brackets overlay matching mockup -->
             <div class="scan-corner tl"></div>
             <div class="scan-corner tr"></div>
@@ -119,34 +127,74 @@ interface SampleSignboard {
 
           <!-- Bottom Card: Detected Text & Actions -->
           <div class="detected-card">
-            <div class="detected-tag">Detected Text</div>
-            <div class="detected-kn font-kannada">{{ detectedText() }}</div>
-            <div class="detected-en">{{ translatedText() }}</div>
-            @if (translitText()) {
-              <div class="detected-tr">{{ translitText() }}</div>
-            }
+            <div class="detected-badge-row">
+              <span class="detected-tag">{{ isKannadaSignboard() ? 'KANNADA SIGN DETECTED' : 'ENGLISH TEXT DETECTED' }}</span>
+              <span class="direction-tag">{{ isKannadaSignboard() ? 'ಕನ್ನಡ → English' : 'English → ಕನ್ನಡ' }}</span>
+            </div>
 
-            <button class="translate-pill-btn" (click)="speakText()" id="btn-sb-translate-action">
-              Translate to Kannada
+            <!-- Primary Translation Hero: Clear English for Kannada sign -->
+            <div class="result-hero-box">
+              <div class="result-hero-label">{{ isKannadaSignboard() ? 'English Meaning' : 'Kannada Translation' }}</div>
+              <div class="result-hero-text" [class.font-kannada]="!isKannadaSignboard()">
+                {{ translatedText() }}
+              </div>
+            </div>
+
+            <!-- Sign Details (Original Script + Pronunciation) -->
+            <div class="result-details-box">
+              <div class="detail-row">
+                <span class="detail-label">{{ isKannadaSignboard() ? 'Original Sign (Kannada):' : 'Original Text:' }}</span>
+                <span class="detail-value font-kannada">{{ detectedText() }}</span>
+              </div>
+              @if (translitText()) {
+                <div class="detail-row">
+                  <span class="detail-label">Pronunciation:</span>
+                  <span class="detail-value translit-val">{{ translitText() }}</span>
+                </div>
+              }
+            </div>
+
+            <button
+              type="button"
+              class="translate-pill-btn"
+              [class.speaking]="isSpeaking()"
+              (click)="speakText()"
+              id="btn-sb-translate-action"
+            >
+              @if (isSpeaking()) {
+                <!-- Animated sound waves when playing -->
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                </svg>
+                <span>Speaking...</span>
+              } @else {
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </svg>
+                <span>{{ isKannadaSignboard() ? 'Hear Kannada Pronunciation' : 'Speak Kannada Aloud' }}</span>
+              }
             </button>
 
             <!-- 3 Rounded Icon Buttons: Copy, Speak, Save -->
             <div class="action-grid">
-              <button class="act-btn" id="btn-sb-copy" (click)="copyText()">
+              <button type="button" class="act-btn" id="btn-sb-copy" (click)="copyText()">
                 <div class="act-icon-box">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 </div>
                 <span class="act-label">Copy</span>
               </button>
 
-              <button class="act-btn" id="btn-sb-speak" (click)="speakText()">
-                <div class="act-icon-box">
+              <button type="button" class="act-btn" id="btn-sb-speak" (click)="speakText()">
+                <div class="act-icon-box" [class.speaking-box]="isSpeaking()">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
                 </div>
-                <span class="act-label">Speak</span>
+                <span class="act-label">{{ isSpeaking() ? 'Playing…' : 'Speak' }}</span>
               </button>
 
-              <button class="act-btn" id="btn-sb-save" (click)="saveResult()">
+              <button type="button" class="act-btn" id="btn-sb-save" (click)="saveResult()">
                 <div class="act-icon-box">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                 </div>
@@ -166,8 +214,13 @@ interface SampleSignboard {
             <div class="error-icon-box">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             </div>
-            <h2 class="status-title">No Text Detected</h2>
-            <p class="status-msg">{{ ocrError() || 'Try scanning with clearer lighting or move closer to the signboard.' }}</p>
+            <h2 class="status-title">Could Not Read Sign</h2>
+            <p class="status-msg">{{ ocrError() || 'Please upload a clear, close-up photo of a signboard — avoid phone screenshots.' }}</p>
+            <div class="ocr-tips">
+              <p class="tip-item">📷 Use a real photo of a sign, not a screenshot</p>
+              <p class="tip-item">🔆 Ensure good lighting &amp; avoid blur</p>
+              <p class="tip-item">🔍 Move closer so the sign fills the frame</p>
+            </div>
             <button class="primary-btn" (click)="retake()">Try Again</button>
           </div>
         }
@@ -418,6 +471,34 @@ interface SampleSignboard {
       color: #6B7280;
     }
 
+    /* Result Photo & Image Overlay */
+    .result-captured-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .result-img-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ocr-tag-floating {
+      background: rgba(23, 107, 87, 0.92);
+      color: #FFFFFF;
+      padding: 0.6rem 1.25rem;
+      border-radius: 12px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(4px);
+    }
+
     /* Detected Bottom Card matching mockup */
     .detected-card {
       background: #FFFFFF;
@@ -426,32 +507,87 @@ interface SampleSignboard {
       padding: 1.25rem;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.75rem;
       box-shadow: 0 4px 14px rgba(0,0,0,0.05);
     }
 
+    .detected-badge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
     .detected-tag {
-      font-size: 0.82rem;
-      font-weight: 600;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
       color: #9CA3AF;
     }
 
-    .detected-kn {
-      font-size: 1.85rem;
+    .direction-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--color-primary, #176B57);
+      background: #E8F5EF;
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+    }
+
+    .result-hero-box {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 14px;
+      padding: 0.85rem 1rem;
+    }
+
+    .result-hero-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      color: var(--color-primary, #176B57);
+      margin-bottom: 0.25rem;
+    }
+
+    .result-hero-text {
+      font-size: 1.45rem;
       font-weight: 800;
-      color: #111827;
-      line-height: 1.2;
+      color: #0F172A;
+      line-height: 1.25;
     }
 
-    .detected-en {
-      font-size: 1.2rem;
+    .result-details-box {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      background: #FFFFFF;
+      border-radius: 10px;
+    }
+
+    .detail-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .detail-label {
+      font-size: 0.8rem;
+      color: #64748B;
       font-weight: 600;
-      color: #4B5563;
+      flex-shrink: 0;
     }
 
-    .detected-tr {
-      font-size: 0.88rem;
-      color: #6B7280;
+    .detail-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #1E293B;
+    }
+
+    .translit-val {
+      font-size: 0.95rem;
+      color: #0D9488;
+      font-weight: 600;
       font-style: italic;
     }
 
@@ -465,8 +601,42 @@ interface SampleSignboard {
       font-weight: 700;
       border: none;
       cursor: pointer;
-      margin: 0.5rem 0 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin: 0.25rem 0 0.5rem;
       box-shadow: 0 4px 12px rgba(23, 107, 87, 0.25);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
+      /* Prevent content collapsing on press */
+      overflow: visible;
+      white-space: nowrap;
+    }
+
+    .translate-pill-btn:active {
+      transform: scale(0.97);
+      box-shadow: 0 2px 6px rgba(23, 107, 87, 0.2);
+      background: #0f5743;
+      /* Keep content fully visible */
+      color: #FFFFFF;
+      opacity: 1;
+    }
+
+    .translate-pill-btn.speaking {
+      background: #0D5C3C;
+      box-shadow: 0 4px 12px rgba(13, 92, 60, 0.35);
+      animation: pulse-green 1.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse-green {
+      0%, 100% { box-shadow: 0 4px 12px rgba(23, 107, 87, 0.25); }
+      50% { box-shadow: 0 4px 20px rgba(23, 107, 87, 0.55); }
+    }
+
+    .speaking-box {
+      background: #D9F2E8 !important;
+      border-color: var(--color-primary, #176B57) !important;
+      animation: pulse-green 1.4s ease-in-out infinite;
     }
 
     .action-grid {
@@ -582,6 +752,25 @@ interface SampleSignboard {
       cursor: pointer;
     }
 
+    .ocr-tips {
+      background: #F0FAF6;
+      border: 1px solid #D9F2E8;
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      width: 100%;
+      text-align: left;
+    }
+
+    .tip-item {
+      font-size: 0.82rem;
+      color: #374151;
+      font-weight: 500;
+      margin: 0;
+    }
+
     .toast {
       position: fixed;
       bottom: calc(var(--nav-height, 64px) + 1.25rem);
@@ -594,6 +783,43 @@ interface SampleSignboard {
       font-size: 0.85rem;
       font-weight: 600;
       z-index: 9999;
+    }
+
+    /* Dark Mode Overrides */
+    [data-theme="dark"] .result-card-outer,
+    [data-theme="dark"] .camera-card,
+    [data-theme="dark"] .sample-card {
+      background: var(--color-bg-card, #16241E) !important;
+      border-color: var(--color-border-soft, #24382E) !important;
+    }
+
+    [data-theme="dark"] .result-details-box {
+      background: transparent !important;
+    }
+
+    [data-theme="dark"] .result-hero-text,
+    [data-theme="dark"] .detail-value {
+      color: var(--color-text-primary, #F3F6F4) !important;
+    }
+
+    [data-theme="dark"] .detail-label,
+    [data-theme="dark"] .act-label {
+      color: var(--color-text-secondary, #A3B5AC) !important;
+    }
+
+    [data-theme="dark"] .act-icon-box {
+      background: #193327 !important;
+      border-color: #244438 !important;
+      color: #34D399 !important;
+    }
+
+    [data-theme="dark"] .ocr-tips {
+      background: #13241C !important;
+      border-color: #1E382C !important;
+    }
+
+    [data-theme="dark"] .tip-item {
+      color: #D1E7DD !important;
     }
 
     .font-kannada {
@@ -619,13 +845,17 @@ export class SignboardTranslateComponent implements OnInit, OnDestroy {
   ocrError = signal<string>('');
   showToast = signal<boolean>(false);
   toastMsg = signal<string>('');
+  capturedImage = signal<string | null>(null);
+  isSpeaking = signal<boolean>(false);
+  // True when detected text is Kannada (signboard → translate to English for tourist)
+  isKannadaSignboard = signal<boolean>(true);
 
   sampleSignboards: SampleSignboard[] = [
     {
       name: 'Bengaluru',
       image: '',
       detectedText: 'ಬೆಂಗಳೂರು',
-      translatedText: 'Bengaluru',
+      translatedText: 'Bengaluru (Bangalore)',
       transliteration: 'Bengaluru'
     },
     {
@@ -661,9 +891,11 @@ export class SignboardTranslateComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {}
 
   selectSample(sample: SampleSignboard): void {
+    this.capturedImage.set(null);
     this.detectedText.set(sample.detectedText);
     this.translatedText.set(sample.translatedText);
     this.translitText.set(sample.transliteration);
+    this.isKannadaSignboard.set(this.translationService.isKannadaScript(sample.detectedText));
     this.state.set('result');
   }
 
@@ -691,6 +923,29 @@ export class SignboardTranslateComponent implements OnInit, OnDestroy {
     }
   }
 
+  async openGallery(galleryInput?: HTMLInputElement): Promise<void> {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera');
+        const image = await Camera.getPhoto({
+          quality: 90,
+          allowEditing: false,
+          resultType: CameraResultType.Base64,
+          source: CameraSource.Photos
+        });
+
+        if (image.base64String) {
+          this.processImage('data:image/jpeg;base64,' + image.base64String);
+        }
+      } catch (err: any) {
+        if (err?.message?.includes('User cancelled')) return;
+        galleryInput?.click();
+      }
+    } else {
+      galleryInput?.click();
+    }
+  }
+
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
@@ -700,10 +955,12 @@ export class SignboardTranslateComponent implements OnInit, OnDestroy {
         this.processImage(reader.result as string);
       };
       reader.readAsDataURL(file);
+      input.value = '';
     }
   }
 
   private async processImage(dataUrl: string): Promise<void> {
+    this.capturedImage.set(dataUrl);
     this.state.set('processing');
     this.processingMsg.set('Analyzing signboard image...');
 
@@ -711,15 +968,45 @@ export class SignboardTranslateComponent implements OnInit, OnDestroy {
       const result = await this.ocrService.recognise(dataUrl);
       if (!result.text || !result.text.trim()) {
         this.state.set('no-text');
+        this.ocrError.set('No text found. Try a clear, close-up photo of a signboard.');
         return;
       }
 
-      this.detectedText.set(result.text.trim());
+      const rawText = result.text.trim();
 
-      // Translate text
-      const trans = await this.translationService.translate(result.text.trim());
-      this.translatedText.set(trans.kannada !== result.text ? trans.kannada : trans.english);
-      this.translitText.set(trans.transliteration);
+      // Detect garbled / phone-screenshot OCR noise.
+      // Signs: very low confidence OR text contains phone UI patterns like
+      // timestamps, copyright symbols, short random tokens with mixed scripts.
+      if (this.isGarbledOcrText(rawText, result.confidence)) {
+        this.state.set('no-text');
+        this.ocrError.set(
+          'The image seems to be a screenshot or has mixed content. Please upload a clear, close-up photo of a signboard only.'
+        );
+        return;
+      }
+
+      this.detectedText.set(rawText);
+
+      // Determine translation direction:
+      // If the detected text is Kannada script → translate to English (for tourist to understand)
+      // If it's English/other script → translate to Kannada
+      const isKannada = this.translationService.isKannadaScript(rawText);
+      this.isKannadaSignboard.set(isKannada);
+
+      if (isKannada) {
+        // Kannada signboard → show English meaning
+        this.processingMsg.set('Translating to English...');
+        const trans = await this.translationService.translateToEnglish(rawText);
+        this.translatedText.set(trans.english);
+        this.translitText.set(trans.transliteration);
+      } else {
+        // English/Roman signboard → show Kannada translation
+        this.processingMsg.set('Translating to Kannada...');
+        const trans = await this.translationService.translate(rawText);
+        this.translatedText.set(trans.kannada);
+        this.translitText.set(trans.transliteration);
+      }
+
       this.state.set('result');
     } catch {
       // Fallback to sample if OCR fails
@@ -727,16 +1014,61 @@ export class SignboardTranslateComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Heuristic check for garbled OCR text commonly produced from phone screenshots.
+   * Returns true if the text is likely junk (UI noise rather than a real signboard).
+   */
+  private isGarbledOcrText(text: string, confidence: number): boolean {
+    // Very low confidence is a strong signal
+    if (confidence < 25 && confidence > 0) return true;
+
+    // If text contains phone UI patterns:
+    // e.g. time patterns like "11:23 PM", copyright "©", percent signs, tiny tokens
+    const phoneUiPatterns = [
+      /\d{1,2}:\d{2}\s*(AM|PM)/i,   // timestamps like "11:23 PM"
+      /©/,                            // copyright symbol
+      /\bWi-?Fi\b/i,                  // Wi-Fi text from status bar
+      /\bBluetooth\b/i,
+      /\bSignal\b.*\d+/i,
+    ];
+    if (phoneUiPatterns.some(p => p.test(text))) return true;
+
+    // Token-level analysis: if most tokens are very short (1-2 chars) → noise
+    const tokens = text.split(/\s+/).filter(t => t.length > 0);
+    if (tokens.length > 3) {
+      const shortTokens = tokens.filter(t => t.length <= 2);
+      if (shortTokens.length / tokens.length > 0.55) return true;
+    }
+
+    return false;
+  }
+
   retake(): void {
+    this.capturedImage.set(null);
     this.state.set('camera');
   }
 
-  speakText(): void {
-    this.audioService.speakKannada(this.detectedText());
+  async speakText(): Promise<void> {
+    if (this.isSpeaking()) {
+      // Stop if already playing
+      this.audioService.stop();
+      this.isSpeaking.set(false);
+      return;
+    }
+    const kannada = this.isKannadaSignboard() ? this.detectedText() : this.translatedText();
+    if (!kannada) return;
+    this.isSpeaking.set(true);
+    try {
+      await this.audioService.speakKannada(kannada);
+    } finally {
+      this.isSpeaking.set(false);
+    }
   }
 
   copyText(): void {
-    const text = `${this.detectedText()} (${this.translatedText()})`;
+    const text = this.isKannadaSignboard()
+      ? `${this.translatedText()} (${this.detectedText()})`
+      : `${this.detectedText()} (${this.translatedText()})`;
     navigator.clipboard.writeText(text).then(() => {
       this.triggerToast('Copied to clipboard!');
     });

@@ -25,9 +25,14 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
             <p class="show-kannada font-kannada">{{ selectedPhrase()!.kannada }}</p>
             <p class="show-translit">{{ selectedPhrase()!.transliteration }}</p>
           </div>
-          <button class="show-speak-btn" id="btn-ek-show-speak" (click)="speakPhrase(selectedPhrase()!)">
+          <button
+            class="show-speak-btn"
+            [class.speaking]="isSpeaking()"
+            id="btn-ek-show-speak"
+            (click)="speakPhrase(selectedPhrase()!)"
+          >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-            Speak Out Loud
+            <span>{{ isSpeaking() ? 'Playing...' : 'Speak Out Loud' }}</span>
           </button>
         </div>
       }
@@ -40,7 +45,6 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
           </button>
           <div class="header-cat-info">
             <h1 class="header-title">{{ selectedCategory()!.label }}</h1>
-            <span class="header-sub font-kannada">{{ selectedCategory()!.labelKannada }}</span>
           </div>
           <div style="width: 38px"></div>
         </header>
@@ -54,9 +58,15 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
                 <p class="phrase-en">{{ phrase.english }}</p>
               </div>
               <div class="phrase-actions">
-                <button class="ph-btn" [id]="'btn-speak-' + phrase.id" (click)="speakPhrase(phrase)" aria-label="Speak phrase">
+                <button
+                  class="ph-btn"
+                  [class.speaking]="speakingPhraseId() === phrase.id"
+                  [id]="'btn-speak-' + phrase.id"
+                  (click)="speakPhrase(phrase)"
+                  aria-label="Speak phrase"
+                >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-                  Speak
+                  <span>{{ speakingPhraseId() === phrase.id ? 'Playing...' : 'Speak' }}</span>
                 </button>
                 <button class="ph-btn ph-btn--show" [id]="'btn-show-' + phrase.id" (click)="openShowMode(phrase)" aria-label="Show to someone">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -69,21 +79,22 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
         <app-bottom-nav />
       }
 
-      <!-- MAIN LIST VIEW (MATCHING MOCKUP) -->
+      <!-- MAIN LIST VIEW -->
       @if (viewMode() === 'list') {
         <header class="ek-header">
           <button class="back-btn" id="btn-ek-back-home" (click)="router.navigate(['/home'])" aria-label="Back to home">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
-          <h1 class="header-title">Offline Mode + Emergency Kit</h1>
+          <h1 class="header-title">Offline Mode +<br>Emergency Kit</h1>
           <div style="width:38px"></div>
         </header>
 
         <div class="list-scroll animate-fade-in">
+
           <!-- CARD 1: Offline Mode Card with Toggle Switch -->
           <div class="offline-mode-card">
             <div class="om-icon-wrap">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#176B57" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
                 <line x1="12" y1="18" x2="12.01" y2="18"/>
                 <path d="M9 7h6M9 11h6"/>
@@ -91,7 +102,7 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
             </div>
             <div class="om-text">
               <span class="om-title">Offline Mode</span>
-              <span class="om-sub">Available offline<br>Key features work without internet.</span>
+              <span class="om-sub">Available offline. Key features<br>work without internet.</span>
             </div>
             <button
               class="ios-switch"
@@ -106,78 +117,72 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
             </button>
           </div>
 
-          <!-- CARD 2: Emergency Kit Section -->
-          <div class="emergency-kit-container">
-            <div class="ek-header-box">
-              <div class="ek-red-badge">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="12" y1="8" x2="12" y2="12"/>
-                  <line x1="12" y1="16" x2="12.01" y2="16"/>
-                </svg>
-              </div>
-              <div class="ek-header-text">
-                <h2 class="ek-title">Emergency Kit</h2>
-                <span class="ek-sub">Quick access for urgent situations</span>
-              </div>
+          <!-- Emergency Kit header row (standalone, no wrapper card) -->
+          <div class="ek-section-header">
+            <div class="ek-red-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
             </div>
-
-            <!-- 4 List Rows (Police, Hospital, Help, Fire) -->
-            <div class="ek-list-box">
-              @for (cat of categories(); track cat.id; let last = $last) {
-                <button
-                  class="cat-row"
-                  [id]="'btn-cat-' + cat.id"
-                  (click)="openCategory(cat)"
-                  [attr.aria-label]="cat.label + ' emergency phrases'"
-                  [class.no-border]="last"
-                >
-                  <span class="cat-icon-badge" [style.background]="cat.color">
-                    <ng-container [ngTemplateOutlet]="iconTpl" [ngTemplateOutletContext]="{icon: cat.icon}"></ng-container>
-                  </span>
-                  <div class="cat-text">
-                    <span class="cat-label">{{ cat.label }}</span>
-                    <span class="cat-sub font-kannada">{{ cat.labelKannada }}</span>
-                  </div>
-                  <svg class="cat-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
-              }
+            <div class="ek-header-text">
+              <h2 class="ek-title">Emergency Kit</h2>
+              <span class="ek-sub">Quick access for <strong>urgent situations</strong></span>
             </div>
           </div>
-        </div>
 
+          <!-- Category list card -->
+          <div class="ek-list-box">
+            @for (cat of categories(); track cat.id; let last = $last) {
+              <button
+                class="cat-row"
+                [id]="'btn-cat-' + cat.id"
+                (click)="openCategory(cat)"
+                [attr.aria-label]="cat.label + ' emergency phrases'"
+                [class.no-border]="last"
+              >
+                <span class="cat-icon-badge" [attr.data-cat]="cat.id">
+                  <ng-container [ngTemplateOutlet]="iconTpl" [ngTemplateOutletContext]="{icon: cat.icon, color: cat.color}"></ng-container>
+                </span>
+                <div class="cat-text">
+                  <span class="cat-label">{{ cat.label }}</span>
+                  <span class="cat-sub font-kannada">{{ cat.labelKannada }}</span>
+                </div>
+                <svg class="cat-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C4C9D4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            }
+          </div>
+
+        </div>
         <app-bottom-nav />
       }
 
-      <!-- Proper SVG icons for Police, Hospital, Help, Fire -->
-      <ng-template #iconTpl let-icon="icon">
+      <!-- SVG icons with color param: colored icon on light bg -->
+      <ng-template #iconTpl let-icon="icon" let-color="color">
         @switch (icon) {
           @case ('police') {
-            <!-- Police officer cap / shield badge icon -->
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" [attr.stroke]="color || '#064E3B'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               <path d="M12 8v5M9.5 10.5h5"/>
             </svg>
           }
           @case ('hospital') {
-            <!-- Hospital / medical cross icon -->
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" [attr.stroke]="color || '#2563EB'" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="3"/>
               <line x1="12" y1="7" x2="12" y2="17"/>
               <line x1="7" y1="12" x2="17" y2="12"/>
             </svg>
           }
           @case ('help') {
-            <!-- Help / exclamation dialog icon -->
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" [attr.stroke]="color || '#0D9488'" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"/>
               <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
               <line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
           }
           @case ('fire') {
-            <!-- Fire flame icon -->
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" [attr.stroke]="color || '#DC2626'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
             </svg>
           }
@@ -191,7 +196,7 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
       height: 100dvh;
       max-height: 100dvh;
       overflow: hidden;
-      background: #F8F9FA;
+      background: #EAECF0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
@@ -200,7 +205,7 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
       max-height: 100dvh;
       display: flex;
       flex-direction: column;
-      background: #F8F9FA;
+      background: #EAECF0;
       overflow: hidden;
       position: relative;
     }
@@ -211,14 +216,14 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
       align-items: center;
       justify-content: space-between;
       gap: 0.75rem;
-      padding: 0.85rem 1rem;
+      padding: 1rem 1rem 1.1rem;
       background: var(--color-primary, #176B57);
       color: #FFFFFF;
-      min-height: 56px;
+      min-height: 64px;
       flex-shrink: 0;
-      border-bottom-left-radius: 20px;
-      border-bottom-right-radius: 20px;
-      box-shadow: 0 4px 12px rgba(23, 107, 87, 0.15);
+      border-bottom-left-radius: 24px;
+      border-bottom-right-radius: 24px;
+      box-shadow: 0 4px 16px rgba(23, 107, 87, 0.18);
       z-index: 10;
     }
 
@@ -242,12 +247,13 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
     }
 
     .header-title {
-      font-size: 1.15rem;
+      font-size: 1.12rem;
       font-weight: 700;
       color: #FFFFFF;
       margin: 0;
       text-align: center;
       flex: 1;
+      line-height: 1.35;
     }
 
     .header-cat-info {
@@ -267,35 +273,35 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
       flex: 1;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      padding: 1.1rem 1rem calc(var(--nav-height, 64px) + 2rem);
+      padding: 1.25rem 1rem calc(var(--nav-height, 64px) + 2rem);
       display: flex;
       flex-direction: column;
-      gap: 1.1rem;
+      gap: 1rem;
     }
 
     /* CARD 1: Offline Mode Card */
     .offline-mode-card {
       background: #FFFFFF;
-      border: 1px solid #E5E7EB;
+      border: 1px solid #E9EAEC;
       border-radius: 18px;
-      padding: 1.1rem;
+      padding: 1rem 1.1rem;
       display: flex;
       align-items: center;
-      gap: 0.85rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      gap: 1rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
     }
 
+    /* Offline Mode icon: rounded square with light green bg */
     .om-icon-wrap {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: var(--color-primary, #176B57);
-      color: #FFFFFF;
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      background: #E8F5F0;
+      color: #176B57;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      box-shadow: 0 3px 8px rgba(23, 107, 87, 0.25);
     }
 
     .om-text {
@@ -314,17 +320,17 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
     .om-sub {
       font-size: 0.78rem;
       color: #6B7280;
-      line-height: 1.35;
+      line-height: 1.4;
     }
 
     /* iOS style switch */
     .ios-switch {
-      width: 48px;
-      height: 28px;
-      border-radius: 14px;
+      width: 52px;
+      height: 30px;
+      border-radius: 15px;
       background: #D1D5DB;
       border: none;
-      padding: 2px;
+      padding: 3px;
       cursor: pointer;
       position: relative;
       transition: background 0.25s ease;
@@ -340,35 +346,25 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
       height: 24px;
       border-radius: 50%;
       background: #FFFFFF;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.25);
       transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .ios-switch.checked .ios-knob {
-      transform: translateX(20px);
+      transform: translateX(22px);
     }
 
-    /* CARD 2: Emergency Kit Container */
-    .emergency-kit-container {
-      background: #FFFBFB;
-      border: 1px solid #FEE2E2;
-      border-radius: 20px;
-      padding: 1.1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.9rem;
-      box-shadow: 0 2px 10px rgba(220, 38, 38, 0.04);
-    }
-
-    .ek-header-box {
+    /* Emergency Kit section header — standalone row, no wrapper card */
+    .ek-section-header {
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      padding: 0 0.25rem;
     }
 
     .ek-red-badge {
-      width: 32px;
-      height: 32px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       background: #EF4444;
       color: #FFFFFF;
@@ -376,13 +372,13 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.28);
     }
 
     .ek-header-text {
       display: flex;
       flex-direction: column;
-      gap: 1px;
+      gap: 2px;
     }
 
     .ek-title {
@@ -397,24 +393,29 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
       color: #6B7280;
     }
 
-    /* Enclosed list box */
+    .ek-sub strong {
+      color: #374151;
+      font-weight: 600;
+    }
+
+    /* Category list card — clean white card */
     .ek-list-box {
       background: #FFFFFF;
-      border-radius: 16px;
-      border: 1px solid #E5E7EB;
+      border-radius: 18px;
+      border: 1px solid #E9EAEC;
       overflow: hidden;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
     .cat-row {
       display: flex;
       align-items: center;
-      gap: 0.85rem;
-      padding: 0.95rem 1rem;
+      gap: 1rem;
+      padding: 1rem 1.1rem;
       width: 100%;
       background: #FFFFFF;
       border: none;
-      border-bottom: 1px solid #F3F4F6;
+      border-bottom: 1px solid #F2F3F5;
       cursor: pointer;
       text-align: left;
       transition: background 0.15s ease;
@@ -428,16 +429,22 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
       background: #F9FAFB;
     }
 
+    /* Rounded square icon badges with light pastel bg + colored icon */
     .cat-icon-badge {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
+
+    /* Per-category light pastel background */
+    .cat-icon-badge[data-cat="police"] { background: #E8F5F0; }
+    .cat-icon-badge[data-cat="hospital"] { background: #EBF3FF; }
+    .cat-icon-badge[data-cat="help"] { background: #E6F7F6; }
+    .cat-icon-badge[data-cat="fire"] { background: #FEE9E9; }
 
     .cat-text {
       flex: 1;
@@ -529,12 +536,34 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
       justify-content: center;
       gap: 6px;
       cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .ph-btn.speaking {
+      background: var(--color-primary, #176B57) !important;
+      color: #FFFFFF !important;
+      border-color: var(--color-primary, #176B57) !important;
+      box-shadow: 0 0 0 3px rgba(23, 107, 87, 0.3) !important;
+      animation: speaking-pulse 1.3s ease-in-out infinite;
     }
 
     .ph-btn--show {
       background: #FFFFFF;
       border-color: #D1D5DB;
       color: #374151;
+    }
+
+    [data-theme="dark"] .ph-btn {
+      background: #193327;
+      border-color: #244438;
+      color: #34D399;
+    }
+
+    [data-theme="dark"] .ph-btn--show {
+      background: #16241E;
+      border-color: #24382E;
+      color: #D1E7DD;
     }
 
     /* Show mode fullscreen */
@@ -609,6 +638,15 @@ type ViewMode = 'list' | 'phrases' | 'show-to-someone';
       gap: 0.5rem;
       cursor: pointer;
       box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+
+    .show-speak-btn.speaking {
+      background: #D9F2E8 !important;
+      color: var(--color-primary-dark, #0f4f40) !important;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.4) !important;
+      animation: speaking-pulse 1.3s ease-in-out infinite;
     }
 
     .font-kannada {
@@ -631,6 +669,8 @@ export class EmergencyKitComponent implements OnInit {
   selectedPhrase = signal<EmergencyPhrase | null>(null);
   categories = signal<EmergencyCategory[]>([]);
   isOfflineEnabled = signal<boolean>(true);
+  isSpeaking = signal<boolean>(false);
+  speakingPhraseId = signal<string | null>(null);
 
   private service = inject(EmergencyKitService);
   private audioService = inject(AudioService);
@@ -666,7 +706,29 @@ export class EmergencyKitComponent implements OnInit {
     this.viewMode.set('phrases');
   }
 
-  speakPhrase(phrase: EmergencyPhrase): void {
-    this.audioService.speakKannada(phrase.kannada);
+  async speakPhrase(phrase: EmergencyPhrase): Promise<void> {
+    if (!phrase) return;
+
+    if (this.isSpeaking()) {
+      this.audioService.stop();
+      this.isSpeaking.set(false);
+      this.speakingPhraseId.set(null);
+      return;
+    }
+
+    this.isSpeaking.set(true);
+    this.speakingPhraseId.set(phrase.id);
+    try {
+      await this.audioService.speakKannada(phrase.kannada);
+    } catch {
+      // Silently finish
+    } finally {
+      this.isSpeaking.set(false);
+      this.speakingPhraseId.set(null);
+      if (typeof document !== 'undefined') {
+        (document.activeElement as HTMLElement)?.blur();
+      }
+    }
   }
 }
+

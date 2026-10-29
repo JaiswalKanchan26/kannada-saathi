@@ -52,6 +52,11 @@ export class PreferencesService {
     const prefersDark = matchMediaSupported ? window.matchMedia('(prefers-color-scheme: dark)').matches : false;
     const isDark = theme === 'dark' || (theme === 'system' && prefersDark);
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    document.documentElement.classList.toggle('dark', isDark);
+    if (document.body) {
+      document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      document.body.classList.toggle('dark', isDark);
+    }
   }
 
   private applyTextSize(size: 'sm' | 'md' | 'lg'): void {
