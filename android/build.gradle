@@ -22,12 +22,33 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    configurations.all {
+        resolutionStrategy {
+            force "androidx.core:core:1.15.0"
+            force "androidx.core:core-ktx:1.15.0"
+        }
+    }
+
     afterEvaluate { project ->
         if (project.hasProperty("android")) {
             android {
                 compileOptions {
                     sourceCompatibility JavaVersion.VERSION_17
                     targetCompatibility JavaVersion.VERSION_17
+                }
+            }
+        }
+    }
+}
+
+// Align Kotlin compilation with Java 17 where the Kotlin Gradle plugin is applied.
+subprojects {
+    tasks.configureEach { task ->
+        if (task.name.startsWith("compile") && task.name.endsWith("Kotlin")) {
+            task.doFirst {
+                if (task.hasProperty("kotlinOptions")) {
+                    task.kotlinOptions.jvmTarget = "17"
                 }
             }
         }
