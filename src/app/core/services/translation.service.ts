@@ -90,85 +90,101 @@ export class TranslationService {
 
   /**
    * Translate English text to Kannada.
+   * If input is already in Kannada script, automatically translates to English.
    */
-  async translate(englishText: string): Promise<TranslationResult> {
-    const raw = englishText.trim();
-    if (!raw) {
-      return { kannada: '', transliteration: '', english: '', isLive: true };
-    }
 
-    const key = 'en2kn:' + raw.toLowerCase();
-    if (this.cache.has(key)) {
-      return this.cache.get(key)!;
-    }
+async translate(text: string): Promise<TranslationResult> {
+  const raw = text.trim();
 
-    // 1. Check offline dictionary
-    const dictMatch = this.lookupEnDictionary(raw);
-    if (dictMatch) {
-      const res: TranslationResult = {
-        kannada: dictMatch.kn,
-        transliteration: dictMatch.transliteration,
-        english: raw,
-        isLive: true,
-      };
-      this.cache.set(key, res);
-      return res;
-    }
+  if (!raw) {
+    return this.emptyResult();
+  }
 
-    // 2. Try online API
-    const result = await this.translateOnline(raw, 'en', 'kn');
+  // If input is Kannada, translate to English.
+  if (this.isKannadaScript(raw)) {
+    return this.translateToEnglish(raw);
+  }
+
+  const key = `en2kn:${raw.toLowerCase()}`;
+
+  if (this.cache.has(key)) {
+    return this.cache.get(key)!;
+  }
+
+  // Only use dictionary for exact word matches.
+  const dictMatch = this.lookupEnDictionary(raw);
+
+  if (dictMatch) {
+    const result: TranslationResult = {
+      kannada: dictMatch.kn,
+      transliteration: dictMatch.transliteration,
+      english: raw,
+      isLive: false
+    };
+
     this.cache.set(key, result);
     return result;
   }
 
+  // Send complete sentence to translation API.
+  const result = await this.translateOnline(raw, 'en', 'kn');
+
+  if (result.kannada) {
+    this.cache.set(key, result);
+  }
+
+  return result;
+}
+
+
   /**
-   * Translate Kannada (or any detected sign text) to English.
-   * Guarantees that the returned `english` property is actually in Roman / English,
-   * never echoing back Kannada script even if offline.
+   * Translate Kannada (or any detected text) to English.
+   * If input is in Roman / English script, automatically translates to Kannada.
    */
-  async translateToEnglish(kannadaText: string): Promise<TranslationResult> {
-    const raw = kannadaText.trim();
-    if (!raw) {
-      return { kannada: '', transliteration: '', english: '', isLive: true };
-    }
 
-    const key = 'kn2en:' + raw;
-    if (this.cache.has(key)) {
-      return this.cache.get(key)!;
-    }
+async translateToEnglish(text: string): Promise<TranslationResult> {
+  const raw = text.trim();
 
-    // 1. Check curated dictionary first for fast, exact match
-    const dictMatch = this.lookupKnDictionary(raw);
-    if (dictMatch) {
-      const res: TranslationResult = {
-        kannada: raw,
-        transliteration: dictMatch.transliteration,
-        english: dictMatch.en,
-        isLive: true,
-      };
-      this.cache.set(key, res);
-      return res;
-    }
+  if (!raw) {
+    return this.emptyResult();
+  }
 
-    // 2. Try online translation APIs
-    const online = await this.translateOnline(raw, 'kn', 'en');
+  // If input is English, translate to Kannada.
+  if (!this.isKannadaScript(raw)) {
+    return this.translate(raw);
+  }
 
-    // Verify online result: if it still returned Kannada script in `english`, fallback to transliteration
-    let finalEnglish = online.english;
-    if (!finalEnglish || this.isKannadaScript(finalEnglish)) {
-      finalEnglish = this.transliterateKannada(raw);
-    }
+  const key = `kn2en:${raw}`;
 
-    const res: TranslationResult = {
+  if (this.cache.has(key)) {
+    return this.cache.get(key)!;
+  }
+
+  // Only use dictionary for exact phrase matches.
+  const dictMatch = this.lookupKnDictionary(raw);
+
+  if (dictMatch) {
+    const result: TranslationResult = {
       kannada: raw,
-      transliteration: online.transliteration || this.transliterateKannada(raw),
-      english: finalEnglish || this.transliterateKannada(raw),
-      isLive: online.isLive,
+      transliteration: dictMatch.transliteration,
+      english: dictMatch.en,
+      isLive: false
     };
 
-    this.cache.set(key, res);
-    return res;
+    this.cache.set(key, result);
+    return result;
   }
+
+  // Send complete sentence to translation API.
+  const result = await this.translateOnline(raw, 'kn', 'en');
+
+  if (result.english) {
+    this.cache.set(key, result);
+  }
+
+  return result;
+}
+
 
   /** Returns true if the text contains Kannada Unicode characters (U+0C80–U+0CFF). */
   isKannadaScript(text: string): boolean {
@@ -239,91 +255,181 @@ export class TranslationService {
   // --------------------------------------------------------------------------
 
   private lookupKnDictionary(text: string): { en: string; transliteration: string } | null {
-    const clean = text.trim();
+    const clean = text.trim().replace(/[?.!,]/g, '');
     if (KAN_TO_EN_DICTIONARY[clean]) {
       return KAN_TO_EN_DICTIONARY[clean];
     }
-    // Partial / substring match
-    for (const [kn, val] of Object.entries(KAN_TO_EN_DICTIONARY)) {
-      if (clean.includes(kn) || kn.includes(clean)) {
-        return val;
-      }
-    }
+    // Only exact match - never hijack full sentences with substring matching
     return null;
   }
 
   private lookupEnDictionary(text: string): { kn: string; transliteration: string } | null {
-    const clean = text.trim().toLowerCase();
+    const clean = text.trim().toLowerCase().replace(/[?.!,]/g, '');
     if (EN_TO_KAN_DICTIONARY[clean]) {
       return EN_TO_KAN_DICTIONARY[clean];
     }
-    for (const [en, val] of Object.entries(EN_TO_KAN_DICTIONARY)) {
-      if (clean.includes(en)) {
-        return val;
-      }
-    }
+    // Only exact match - never hijack full sentences with substring matching
     return null;
   }
 
-  private async translateOnline(text: string, sourceLang: string, targetLang: string): Promise<TranslationResult> {
-    // Attempt 1: MyMemory Translation API (CORS friendly, high quality)
-    try {
-      const myMemoryUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang}|${targetLang}`;
-      const resp = await fetch(myMemoryUrl);
-      if (resp.ok) {
-        const json = await resp.json();
-        const translated = json?.responseData?.translatedText;
-        if (translated && typeof translated === 'string' && !translated.startsWith('MYMEMORY WARNING')) {
-          const isToEnglish = targetLang === 'en';
-          return {
-            kannada: isToEnglish ? text : translated,
-            transliteration: isToEnglish ? this.transliterateKannada(text) : '',
-            english: isToEnglish ? translated : text,
-            isLive: true,
-          };
-        }
-      }
-    } catch {
-      // Fall through to Google Translate
-    }
-
-    // Attempt 2: Google Translate unofficial endpoint (simple GET, no custom headers to prevent preflight)
-    try {
-      const gUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&dt=rm&q=${encodeURIComponent(text)}`;
-      const gResp = await fetch(gUrl);
-      if (gResp.ok) {
-        const data = await gResp.json();
-        let translated = '';
-        if (Array.isArray(data[0])) {
-          translated = data[0]
-            .filter((seg: any[]) => seg && seg[0])
-            .map((seg: any[]) => seg[0])
-            .join('');
-        }
-        if (translated) {
-          const isToEnglish = targetLang === 'en';
-          return {
-            kannada: isToEnglish ? text : translated,
-            transliteration: isToEnglish ? this.transliterateKannada(text) : '',
-            english: isToEnglish ? translated : text,
-            isLive: true,
-          };
-        }
-      }
-    } catch {
-      // Fall through to fallback
-    }
-
-    // Attempt 3: Offline fallback
-    const isToEnglish = targetLang === 'en';
-    const translit = this.transliterateKannada(text);
-    return {
-      kannada: text,
-      transliteration: translit,
-      english: isToEnglish ? translit : text,
-      isLive: false,
-    };
+  
+private isValidTranslation(
+  translated: string,
+  targetLang: string
+): boolean {
+  if (!translated || !translated.trim()) {
+    return false;
   }
+
+  if (targetLang === 'kn') {
+    return this.isKannadaScript(translated);
+  }
+
+  if (targetLang === 'en') {
+    return (
+      /[a-zA-Z]/.test(translated) &&
+      !this.isKannadaScript(translated)
+    );
+  }
+
+  return false;
+}
+
+private createResult(
+  original: string,
+  translated: string,
+  isToKannada: boolean
+): TranslationResult {
+  const kannada = isToKannada ? translated : original;
+  const english = isToKannada ? original : translated;
+
+  return {
+    kannada,
+    english,
+    transliteration: this.transliterateKannada(kannada),
+    isLive: true
+  };
+}
+
+private emptyResult(): TranslationResult {
+  return {
+    kannada: '',
+    english: '',
+    transliteration: '',
+    isLive: false
+  };
+}
+
+
+
+private async translateOnline(
+  text: string,
+  sourceLang: string,
+  targetLang: string
+): Promise<TranslationResult> {
+
+  const isToKannada = targetLang === 'kn';
+
+  // Provider 1: Google Translate
+  try {
+    const params = new URLSearchParams({
+      client: 'gtx',
+      sl: sourceLang,
+      tl: targetLang,
+      dt: 't',
+      q: text
+    });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
+    try {
+      const response = await fetch(
+        `https://translate.googleapis.com/translate_a/single?${params}`,
+        { signal: controller.signal }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+
+        const translated = Array.isArray(data?.[0])
+          ? data[0]
+              .filter((segment: any) =>
+                Array.isArray(segment) &&
+                typeof segment[0] === 'string'
+              )
+              .map((segment: any) => segment[0])
+              .join('')
+              .trim()
+          : '';
+
+        if (this.isValidTranslation(translated, targetLang)) {
+          return this.createResult(
+            text,
+            translated,
+            isToKannada
+          );
+        }
+      }
+    } finally {
+      clearTimeout(timeout);
+    }
+  } catch (error) {
+    console.warn('Google translation failed:', error);
+  }
+
+  // Provider 2: MyMemory
+  try {
+    const params = new URLSearchParams({
+      q: text,
+      langpair: `${sourceLang}|${targetLang}`
+    });
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
+    try {
+      const response = await fetch(
+        `https://api.mymemory.translated.net/get?${params}`,
+        { signal: controller.signal }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+
+        const translated =
+          data?.responseData?.translatedText?.trim() || '';
+
+        if (
+          !translated.startsWith('MYMEMORY WARNING') &&
+          this.isValidTranslation(translated, targetLang)
+        ) {
+          return this.createResult(
+            text,
+            translated,
+            isToKannada
+          );
+        }
+      }
+    } finally {
+      clearTimeout(timeout);
+    }
+  } catch (error) {
+    console.warn('MyMemory translation failed:', error);
+  }
+
+  // Both APIs failed.
+  return {
+    kannada: isToKannada ? '' : text,
+    english: isToKannada ? text : '',
+    transliteration: isToKannada
+      ? ''
+      : this.transliterateKannada(text),
+    isLive: false,
+    error: 'Translation is currently unavailable. Please try again.'
+  };
+}
+
 }
 
 export interface TranslationResult {
