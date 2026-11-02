@@ -68,7 +68,13 @@ Start the development server:
 npx ng serve
 ```
 
-Open the local URL displayed in the terminal.
+Open the local URL displayed in the terminal. 
+
+## Preview the application in mobile view
+1. Open the application in Chrome.
+2. Right-click and select Inspect.
+3. Click the Toggle Device Toolbar icon.
+4. Alternatively, use Ctrl + Shift + M.
 
 ## Review Notes
 
